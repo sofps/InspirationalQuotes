@@ -26,8 +26,10 @@ import java.util.UUID;
 
 public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePageContract.View {
 
-	@BindView(R.id.quote) TextView textViewQuote;
-	@BindView(R.id.author) TextView textViewAuthor;
+	@BindView(R.id.quote) TextView mTextViewQuote;
+	@BindView(R.id.author) TextView mTextViewAuthor;
+
+	private ViewGroup mRootView;
 
 	public static final String ARG_PAGE = "page";
 	public static final String ARG_BACKGROUND = "background";
@@ -36,8 +38,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 	public static final String ARG_AUTHOR = "author";
 
 	private static final String AUTHOR_PREFIX = "-";
-
-	private ViewGroup rootView;
 
 	private int mPageNumber;
 	private int mBackground;
@@ -58,9 +58,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 		return fragment;
 	}
 
-	public QuotesSlidePageFragment() {
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -77,36 +74,36 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		rootView = (ViewGroup) inflater.inflate(
+		mRootView = (ViewGroup) inflater.inflate(
 				R.layout.fragment_quotes_slide_page, container, false);
-		rootView.setBackgroundResource(mBackground);
+		mRootView.setBackgroundResource(mBackground);
 
-		ButterKnife.bind(this, rootView);
+		ButterKnife.bind(this, mRootView);
 
 		Typeface font = Typeface.createFromAsset(getActivity().getAssets(),
 				mFont);
 
-		textViewQuote.setTypeface(font);
-		textViewQuote.setText(mQuote);
+		mTextViewQuote.setTypeface(font);
+		mTextViewQuote.setText(mQuote);
 
-		textViewAuthor.setTypeface(font);
-		textViewAuthor.setText(AUTHOR_PREFIX + " " + mAuthor);
+		mTextViewAuthor.setTypeface(font);
+		mTextViewAuthor.setText(AUTHOR_PREFIX + " " + mAuthor);
 
 		float size;
 		if ((mFont.contains("large") && mQuote.length() >= 50)) {
 			size = getResources().getDimension(R.dimen.long_quote_size)
 					/ getResources().getDisplayMetrics().density;
-			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			textViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			mTextViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			mTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		} else if (mFont.contains("small")) {
 			size = getResources().getDimension(
 					R.dimen.quote_size_for_smaller_fonts)
 					/ getResources().getDisplayMetrics().density;
-			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			textViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			mTextViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			mTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		}
 
-		return rootView;
+		return mRootView;
 	}
 
 	/**
@@ -191,12 +188,12 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 		}
 
 		private void takeScreenShot() {
-			rootView.buildDrawingCache();
-			rootView.setDrawingCacheEnabled(true);
-			mScreenshot = Bitmap.createBitmap(rootView.getDrawingCache(), 0, 0,
-					rootView.getWidth(), rootView.getHeight());
-			rootView.destroyDrawingCache();
-			rootView.setDrawingCacheEnabled(false);
+			mRootView.buildDrawingCache();
+			mRootView.setDrawingCacheEnabled(true);
+			mScreenshot = Bitmap.createBitmap(mRootView.getDrawingCache(), 0, 0, mRootView.getWidth(), mRootView
+					.getHeight());
+			mRootView.destroyDrawingCache();
+			mRootView.setDrawingCacheEnabled(false);
 		}
 
 	}
