@@ -24,8 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.UUID;
 
-public class ScreenSlidePageFragment extends Fragment {
-	private static final String TAG = "ScreenSlidePageFragment";
+public class QuotesSlidePageFragment extends Fragment {
+	private static final String TAG = "QuotesSlidePageFragment";
 
 	public static final String ARG_PAGE = "page";
 	public static final String ARG_BACKGROUND = "background";
@@ -43,9 +43,9 @@ public class ScreenSlidePageFragment extends Fragment {
 	private String mQuote;
 	private String mAuthor;
 
-	public static ScreenSlidePageFragment create(int pageNumber,
+	public static QuotesSlidePageFragment create(int pageNumber,
 			int background, String font, String quote, String author) {
-		ScreenSlidePageFragment fragment = new ScreenSlidePageFragment();
+		QuotesSlidePageFragment fragment = new QuotesSlidePageFragment();
 		Bundle args = new Bundle();
 		args.putInt(ARG_PAGE, pageNumber);
 		args.putInt(ARG_BACKGROUND, background);
@@ -56,7 +56,7 @@ public class ScreenSlidePageFragment extends Fragment {
 		return fragment;
 	}
 
-	public ScreenSlidePageFragment() {
+	public QuotesSlidePageFragment() {
 	}
 
 	@Override

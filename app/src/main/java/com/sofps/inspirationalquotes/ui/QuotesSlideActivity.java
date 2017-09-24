@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Random;
 
-public class ScreenSlideActivity extends FragmentActivity {
-	private static final String TAG = "ScreenSlideActivity";
+public class QuotesSlideActivity extends FragmentActivity {
+	private static final String TAG = "QuotesSlideActivity";
 
 	private static final String ALARM_SET = "alarm_set";
 	private static final String FONTS = "fonts";
@@ -182,7 +182,7 @@ public class ScreenSlideActivity extends FragmentActivity {
 			Log.d(TAG, "getItem " + position + ": " + "background: "
 					+ background + ", font: " + font);
 
-			return ScreenSlidePageFragment.create(position, background, font,
+			return QuotesSlidePageFragment.create(position, background, font,
 					quote.getText(), quote.getAuthor());
 		}
 
@@ -275,7 +275,7 @@ public class ScreenSlideActivity extends FragmentActivity {
 				throw new Error("Unable to open fonts");
 			}
 
-			mDabaBaseHelper = new DataBaseHelper(ScreenSlideActivity.this);
+			mDabaBaseHelper = new DataBaseHelper(QuotesSlideActivity.this);
 			if (savedInstanceState == null) {
 				mCurrentLanguage = mPreferences.getString(
 						SettingsDialogFragment.PREF_LANGUAGE, null);
@@ -374,7 +374,7 @@ public class ScreenSlideActivity extends FragmentActivity {
 			setProgressBarIndeterminateVisibility(false);
 
 			if (!startedFlag) {
-				AppRater.app_launched(ScreenSlideActivity.this);
+				AppRater.app_launched(QuotesSlideActivity.this);
 				startedFlag = true;
 			}
 		}
@@ -454,7 +454,7 @@ public class ScreenSlideActivity extends FragmentActivity {
 
 	private void addShortcut() {
 		Intent shortcutIntent = new Intent(getApplicationContext(),
-				ScreenSlideActivity.class);
+				QuotesSlideActivity.class);
 
 		shortcutIntent.setAction(Intent.ACTION_MAIN);
 
