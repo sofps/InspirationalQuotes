@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
 
     <string name="app_name">Inspirational Quotes</string>
     <string name="action_settings">Settings</string>
@@ -19,5 +19,8 @@
     <string name="rate_button">Rate now</string>
     <string name="remind_later_button">Remind me later</string>
     <string name="dont_rate_button">No, thanks</string>
+    <string name="quote_share_failed">There was an error trying to share the quote</string>
+    <string name="quote_share_subject">I love this quote</string>
+    <string name="quote_share_text">I hope you love it too</string>
 
 </resources>

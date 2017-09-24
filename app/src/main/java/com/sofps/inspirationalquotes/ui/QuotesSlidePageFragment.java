@@ -1,28 +1,16 @@
 package com.sofps.inspirationalquotes.ui;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.sofps.inspirationalquotes.R;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.UUID;
 
 public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePageContract.View {
 
@@ -112,73 +100,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 
 	@Override
 	public void setPresenter(QuotesSlidePageContract.Presenter presenter) {
-
-	}
-
-	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {
-
-		private Bitmap mScreenshot;
-
-		@Override
-		protected File doInBackground(Void... arg0) {
-			File dir;
-			if (Environment.MEDIA_MOUNTED.equals(Environment
-					.getExternalStorageState())) {
-				dir = Environment.getExternalStorageDirectory();
-			} else {
-				dir = getActivity().getCacheDir();
-			}
-			File myPath = new File(dir, "IQ_" + UUID.randomUUID() + ".jpg");
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(myPath);
-				mScreenshot.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-				mScreenshot.recycle();
-				mScreenshot = null;
-				fos.flush();
-				fos.close();
-				return myPath;
-			} catch (FileNotFoundException e) {
-				throw new Error("File not found");
-			} catch (Exception e) {
-				throw new Error(e);
-			}
-		}
-
-		@Override
-		protected void onPreExecute() {
-			getActivity().setProgressBarIndeterminateVisibility(true);
-			takeScreenShot();
-		}
-
-		@SuppressLint("InlinedApi")
-		@Override
-		protected void onPostExecute(File result) {
-				if (result == null) {
-					throw new Error("File not found");
-				}
-
-				Intent share = new Intent(Intent.ACTION_SEND);
-				share.setType("image/*");
-				share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(result));
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-					share.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-				}
-				startActivity(Intent.createChooser(share,
-						getString(R.string.share)));
-
-				getActivity().setProgressBarIndeterminateVisibility(false);
-		}
-
-		private void takeScreenShot() {
-			mRootView.buildDrawingCache();
-			mRootView.setDrawingCacheEnabled(true);
-			mScreenshot = Bitmap.createBitmap(mRootView.getDrawingCache(), 0, 0, mRootView.getWidth(), mRootView
-					.getHeight());
-			mRootView.destroyDrawingCache();
-			mRootView.setDrawingCacheEnabled(false);
-		}
 
 	}
 }
