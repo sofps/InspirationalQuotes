@@ -95,7 +95,7 @@ public class QuotesSlideActivity extends FragmentActivity {
 		// Request for the progress bar to be shown in the title
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		setContentView(R.layout.activity_screen_slide);
+		setContentView(R.layout.activity_quotes_slide);
 
 		// Remove app title from action bar
 		getActionBar().setDisplayShowTitleEnabled(false);
