@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.util.LayoutedTextView;
 import java.io.File;
@@ -24,7 +26,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.UUID;
 
-public class QuotesSlidePageFragment extends Fragment {
+public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePageContract.View {
+
+	@BindView(R.id.quote) TextView textViewQuote;
+	@BindView(R.id.author) LayoutedTextView layoutedTextViewAuthor;
+
+
 	private static final String TAG = "QuotesSlidePageFragment";
 
 	public static final String ARG_PAGE = "page";
@@ -82,34 +89,39 @@ public class QuotesSlidePageFragment extends Fragment {
 				R.layout.fragment_screen_slide_page, container, false);
 		rootView.setBackgroundResource(mBackground);
 
+		ButterKnife.bind(this, rootView);
+
 		Typeface font = Typeface.createFromAsset(getActivity().getAssets(),
 				mFont);
 
-		TextView quoteTextView = (TextView) rootView.findViewById(R.id.quote);
-		quoteTextView.setTypeface(font);
-		quoteTextView.setText(mQuote);
+		textViewQuote.setTypeface(font);
+		textViewQuote.setText(mQuote);
 
-		LayoutedTextView authorTextView = (LayoutedTextView) rootView
-				.findViewById(R.id.author);
-		authorTextView.setTypeface(font);
-		authorTextView.setText(AUTHOR_PREFIX + " " + mAuthor);
+		layoutedTextViewAuthor.setTypeface(font);
+		layoutedTextViewAuthor.setText(AUTHOR_PREFIX + " " + mAuthor);
 
 		float size;
 		if ((mFont.contains("large") && mQuote.length() >= 50)) {
 			size = getResources().getDimension(R.dimen.long_quote_size)
 					/ getResources().getDisplayMetrics().density;
-			quoteTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			authorTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			layoutedTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		} else if (mFont.contains("small")) {
 			size = getResources().getDimension(
 					R.dimen.quote_size_for_smaller_fonts)
 					/ getResources().getDisplayMetrics().density;
-			quoteTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			authorTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			layoutedTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		}
 
 		return rootView;
 	}
+
+	//@Override
+	//public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+	//	super.onViewCreated(view, savedInstanceState);
+	//	ButterKnife.bind(this, view);
+	//}
 
 	/**
 	 * Un poco chancho esto aca pero fue la unica forma que encontre para poner
@@ -130,6 +142,11 @@ public class QuotesSlidePageFragment extends Fragment {
 
 	public int getPageNumber() {
 		return mPageNumber;
+	}
+
+	@Override
+	public void setPresenter(QuotesSlidePageContract.Presenter presenter) {
+
 	}
 
 	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {

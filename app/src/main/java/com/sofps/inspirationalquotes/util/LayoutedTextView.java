@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+// TODO remove custom view
 public class LayoutedTextView extends TextView {
 
 	public LayoutedTextView(Context context) {
