@@ -19,7 +19,6 @@ android {
 }
 
 dependencies {
-    compile files('libs/amazon-ads-5.4.78.jar')
     compile files('libs/android-support-v13.jar')
     compile files('libs/sqliteassethelper-2.0.1.jar')
 }

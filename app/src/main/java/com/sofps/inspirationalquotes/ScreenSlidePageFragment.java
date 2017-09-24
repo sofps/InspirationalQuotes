@@ -1,10 +1,5 @@
 package com.sofps.inspirationalquotes;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.UUID;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,9 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import com.amazon.device.ads.AdLayout;
-import com.amazon.device.ads.AdTargetingOptions;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.UUID;
 
 public class ScreenSlidePageFragment extends Fragment {
 	private static final String TAG = "ScreenSlidePageFragment";
@@ -44,8 +40,6 @@ public class ScreenSlidePageFragment extends Fragment {
 	private String mFont;
 	private String mQuote;
 	private String mAuthor;
-
-	private AdLayout adView;
 
 	public static ScreenSlidePageFragment create(int pageNumber,
 			int background, String font, String quote, String author) {
@@ -112,12 +106,6 @@ public class ScreenSlidePageFragment extends Fragment {
 			authorTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		}
 
-		// Ads Amazon
-		adView = (AdLayout) rootView.findViewById(R.id.adview);
-		AdTargetingOptions opt = new AdTargetingOptions()
-				.enableGeoLocation(true);
-		adView.loadAd(opt);
-
 		return rootView;
 	}
 
@@ -136,13 +124,6 @@ public class ScreenSlidePageFragment extends Fragment {
 		}
 
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public void onDestroy() {
-		Log.d(TAG, "onDestroy");
-		adView.destroy();
-		super.onDestroy();
 	}
 
 	public int getPageNumber() {
@@ -183,14 +164,12 @@ public class ScreenSlidePageFragment extends Fragment {
 		@Override
 		protected void onPreExecute() {
 			getActivity().setProgressBarIndeterminateVisibility(true);
-			adView.setVisibility(View.INVISIBLE);
 			takeScreenShot();
 		}
 
 		@SuppressLint("InlinedApi")
 		@Override
 		protected void onPostExecute(File result) {
-			try {
 				if (result == null) {
 					throw new Error("File not found");
 				}
@@ -206,9 +185,6 @@ public class ScreenSlidePageFragment extends Fragment {
 						getString(R.string.share)));
 
 				getActivity().setProgressBarIndeterminateVisibility(false);
-			} finally {
-				adView.setVisibility(View.VISIBLE);
-			}
 		}
 
 		private void takeScreenShot() {

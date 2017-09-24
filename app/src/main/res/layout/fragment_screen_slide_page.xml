@@ -1,5 +1,4 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:Amazon="http://schemas.android.com/apk/lib/com.amazon.device.ads"
     android:id="@+id/mainmenu"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
@@ -35,11 +34,5 @@
                 android:textSize="@dimen/quote_size" />
         </LinearLayout>
     </ScrollView>
-
-    <com.amazon.device.ads.AdLayout
-        android:id="@+id/adview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

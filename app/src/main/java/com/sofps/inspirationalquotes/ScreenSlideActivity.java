@@ -1,14 +1,5 @@
 package com.sofps.inspirationalquotes;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Random;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
@@ -30,14 +21,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-
-import com.amazon.device.ads.Ad;
-import com.amazon.device.ads.AdProperties;
-import com.amazon.device.ads.AdRegistration;
-import com.amazon.device.ads.AdTargetingOptions;
-import com.amazon.device.ads.DefaultAdListener;
-import com.amazon.device.ads.InterstitialAd;
 import com.sofps.inspirationalquotes.DataBaseHelper.QuoteCursor;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Random;
 
 public class ScreenSlideActivity extends FragmentActivity {
 	private static final String TAG = "ScreenSlideActivity";
@@ -88,10 +80,6 @@ public class ScreenSlideActivity extends FragmentActivity {
 	private SharedPreferences mPreferences;
 	private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
-	private InterstitialAd interstitialAd;
-	private boolean adReady = false;
-	private AdTargetingOptions opt;
-
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -101,16 +89,6 @@ public class ScreenSlideActivity extends FragmentActivity {
 
 		// Request for the progress bar to be shown in the title
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
-		// TODO comentar, es solo para probar
-		// AdRegistration.enableTesting(true);
-		// AdRegistration.enableLogging(true);
-		AdRegistration.setAppKey(getResources().getString(
-				R.string.amazon_app_key));
-		interstitialAd = new InterstitialAd(this);
-		interstitialAd.setListener(new MyCustomAdListener());
-		opt = new AdTargetingOptions().enableGeoLocation(true);
-		interstitialAd.loadAd(opt);
 
 		setContentView(R.layout.activity_screen_slide);
 
@@ -199,12 +177,6 @@ public class ScreenSlideActivity extends FragmentActivity {
 
 			Log.d(TAG, "getItem " + position + ": " + "background: "
 					+ background + ", font: " + font);
-
-			if (position != 0 && position % 10 == 0 && adReady) {
-				Log.d(TAG, "Show interstitial");
-				interstitialAd.showAd();
-				interstitialAd.loadAd(opt);
-			}
 
 			return ScreenSlidePageFragment.create(position, background, font,
 					quote.getText(), quote.getAuthor());
@@ -403,21 +375,6 @@ public class ScreenSlideActivity extends FragmentActivity {
 			}
 		}
 
-	}
-
-	private class MyCustomAdListener extends DefaultAdListener {
-		@Override
-		public void onAdLoaded(Ad ad, AdProperties adProperties) {
-			if (ad == interstitialAd) {
-				adReady = true;
-			}
-		}
-
-		@Override
-		public void onAdDismissed(Ad ad) {
-			adReady = false;
-			interstitialAd.loadAd(opt);
-		}
 	}
 
 	private void shuffleArray(int[] array) {
