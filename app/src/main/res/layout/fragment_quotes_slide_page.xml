@@ -24,7 +24,7 @@
                 android:gravity="center"
                 android:textSize="@dimen/quote_size" />
 
-            <com.sofps.inspirationalquotes.util.LayoutedTextView
+            <TextView
                 android:id="@+id/author"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

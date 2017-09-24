@@ -20,7 +20,6 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.sofps.inspirationalquotes.R;
-import com.sofps.inspirationalquotes.util.LayoutedTextView;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,7 +28,7 @@ import java.util.UUID;
 public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePageContract.View {
 
 	@BindView(R.id.quote) TextView textViewQuote;
-	@BindView(R.id.author) LayoutedTextView layoutedTextViewAuthor;
+	@BindView(R.id.author) TextView textViewAuthor;
 
 
 	private static final String TAG = "QuotesSlidePageFragment";
@@ -97,31 +96,25 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 		textViewQuote.setTypeface(font);
 		textViewQuote.setText(mQuote);
 
-		layoutedTextViewAuthor.setTypeface(font);
-		layoutedTextViewAuthor.setText(AUTHOR_PREFIX + " " + mAuthor);
+		textViewAuthor.setTypeface(font);
+		textViewAuthor.setText(AUTHOR_PREFIX + " " + mAuthor);
 
 		float size;
 		if ((mFont.contains("large") && mQuote.length() >= 50)) {
 			size = getResources().getDimension(R.dimen.long_quote_size)
 					/ getResources().getDisplayMetrics().density;
 			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			layoutedTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			textViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		} else if (mFont.contains("small")) {
 			size = getResources().getDimension(
 					R.dimen.quote_size_for_smaller_fonts)
 					/ getResources().getDisplayMetrics().density;
 			textViewQuote.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
-			layoutedTextViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
+			textViewAuthor.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size);
 		}
 
 		return rootView;
 	}
-
-	//@Override
-	//public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-	//	super.onViewCreated(view, savedInstanceState);
-	//	ButterKnife.bind(this, view);
-	//}
 
 	/**
 	 * Un poco chancho esto aca pero fue la unica forma que encontre para poner
