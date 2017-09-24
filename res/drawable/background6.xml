@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <gradient
+        android:angle="270"
+        android:centerColor="#F3C1C7"
+        android:endColor="#ABA0EE"
+        android:startColor="#FC0D5C" />
+
+</shape>
+<!-- say_hello_to_heaven -->

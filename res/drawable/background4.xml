@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <gradient
+        android:angle="270"
+        android:centerColor="#CEAC7E"
+        android:endColor="#F2C792"
+        android:startColor="#DD304E" />
+
+</shape>
+<!-- early_morning -->
