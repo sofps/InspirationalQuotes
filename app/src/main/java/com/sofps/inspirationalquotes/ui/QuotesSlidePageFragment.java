@@ -106,22 +106,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 		return mRootView;
 	}
 
-	/**
-	 * Un poco chancho esto aca pero fue la unica forma que encontre para poner
-	 * invisible la publicidad para el screenshot
-	 */
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_share:
-			ScreenshotLoader loader = new ScreenshotLoader();
-			loader.execute();
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
-
 	public int getPageNumber() {
 		return mPageNumber;
 	}

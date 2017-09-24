@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,11 +24,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import com.sofps.inspirationalquotes.AlarmReceiver;
+import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
 import com.sofps.inspirationalquotes.data.DataBaseHelper.QuoteCursor;
 import com.sofps.inspirationalquotes.data.Quote;
-import com.sofps.inspirationalquotes.R;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Random;
+import java.util.UUID;
 
 public class QuotesSlideActivity extends FragmentActivity {
 	private static final String TAG = "QuotesSlideActivity";
@@ -155,9 +160,76 @@ public class QuotesSlideActivity extends FragmentActivity {
 			shuffleEverything();
 			mPagerAdapter.notifyDataSetChanged();
 			return true;
+			case R.id.action_share:
+				ScreenshotLoader loader = new ScreenshotLoader();
+				loader.execute();
+				return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {
+
+		private Bitmap mScreenshot;
+
+		@Override
+		protected File doInBackground(Void... arg0) {
+			File dir;
+			if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+				dir = Environment.getExternalStorageDirectory();
+			} else {
+				dir = getCacheDir();
+			}
+			File myPath = new File(dir, "IQ_" + UUID.randomUUID() + ".jpg");
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(myPath);
+				mScreenshot.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+				mScreenshot.recycle();
+				mScreenshot = null;
+				fos.flush();
+				fos.close();
+				return myPath;
+			} catch (FileNotFoundException e) {
+				throw new Error("File not found");
+			} catch (Exception e) {
+				throw new Error(e);
+			}
+		}
+
+		@Override
+		protected void onPreExecute() {
+			setProgressBarIndeterminateVisibility(true); // TODO
+			takeScreenShot();
+		}
+
+		@SuppressLint("InlinedApi")
+		@Override
+		protected void onPostExecute(File result) {
+			if (result == null) {
+				throw new Error("File not found");
+			}
+
+			Intent share = new Intent(Intent.ACTION_SEND);
+			share.setType("image/*");
+			share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(result));
+			share.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+			startActivity(Intent.createChooser(share, getString(R.string.share)));
+
+			setProgressBarIndeterminateVisibility(false); // TODO
+		}
+
+		private void takeScreenShot() {
+			mPager.buildDrawingCache();
+			mPager.setDrawingCacheEnabled(true);
+			mScreenshot = Bitmap.createBitmap(mPager.getDrawingCache(), 0, 0, mPager.getWidth(), mPager
+					.getHeight());
+			mPager.destroyDrawingCache();
+			mPager.setDrawingCacheEnabled(false);
+		}
+
 	}
 
 	private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
