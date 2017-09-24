@@ -86,7 +86,7 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 			Bundle savedInstanceState) {
 		Log.d(TAG, "onCreateView " + mPageNumber);
 		rootView = (ViewGroup) inflater.inflate(
-				R.layout.fragment_screen_slide_page, container, false);
+				R.layout.fragment_quotes_slide_page, container, false);
 		rootView.setBackgroundResource(mBackground);
 
 		ButterKnife.bind(this, rootView);
