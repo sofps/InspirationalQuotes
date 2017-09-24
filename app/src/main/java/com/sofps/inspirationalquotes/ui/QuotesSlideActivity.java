@@ -13,17 +13,20 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
@@ -38,8 +41,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Random;
+import java.util.UUID;
 
-public class QuotesSlideActivity extends FragmentActivity {
+public class QuotesSlideActivity extends AppCompatActivity {
+
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
+
 	private static final String TAG = "QuotesSlideActivity";
 
 	private static final String ALARM_SET = "alarm_set";
@@ -91,14 +99,14 @@ public class QuotesSlideActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_quotes_slide);
 
-		// Request for the progress bar to be shown in the title
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        ButterKnife.bind(this);
 
-		setContentView(R.layout.activity_quotes_slide);
-
-		// Remove app title from action bar
-		getActionBar().setDisplayShowTitleEnabled(false);
+        setSupportActionBar(mToolbar);
+        // Hide app name and show logo instead
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mToolbar.setLogo(R.drawable.ic_launcher);
 
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -113,9 +121,9 @@ public class QuotesSlideActivity extends FragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.activity_screen_slide, menu);
-		return true;
-	}
+        getMenuInflater().inflate(R.menu.menu_quotes_slide, menu);
+        return true;
+    }
 
 	@Override
 	protected void onDestroy() {
@@ -169,9 +177,10 @@ public class QuotesSlideActivity extends FragmentActivity {
 			File file = null;
 			if (mScreenshot != null) {
 				File saveFile = ScreenshotUtils.getMainDirectoryName(QuotesSlideActivity.this); // Get the path to save screenshot
-				file = ScreenshotUtils.store(mScreenshot, "screenshot.jpg", saveFile); // Save the screenshot to selected path
-			} else {
-				Toast.makeText(QuotesSlideActivity.this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
+                String filename = "IQ_" + UUID.randomUUID() + ".jpg";
+                file = ScreenshotUtils.store(mScreenshot, filename, saveFile); // Save the screenshot to selected path
+            } else {
+                Toast.makeText(QuotesSlideActivity.this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
 						.show();
 			}
 
@@ -180,9 +189,9 @@ public class QuotesSlideActivity extends FragmentActivity {
 
 		@Override
 		protected void onPreExecute() {
-			setProgressBarIndeterminateVisibility(true); // TODO
-			mScreenshot = ScreenshotUtils.getScreenshot(mPager);
-		}
+            mProgressBar.setVisibility(View.VISIBLE);
+            mScreenshot = ScreenshotUtils.getScreenshot(mPager);
+        }
 
 		@Override
 		protected void onPostExecute(File result) {
@@ -192,9 +201,9 @@ public class QuotesSlideActivity extends FragmentActivity {
 
 			shareScreenshot(result);
 
-			setProgressBarIndeterminateVisibility(false); // TODO
-		}
-	}
+            mProgressBar.setVisibility(View.INVISIBLE);
+        }
+    }
 
 	private void shareScreenshot(File file) {
 		Uri uri = Uri.fromFile(file); // Convert file path into Uri for sharing
