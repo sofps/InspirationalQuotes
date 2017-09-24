@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">Frases inspiradoras</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_shuffle">Mezclar</string>
+    <string name="share">Compartir vía</string>
+    <string name="notification_msg">Hay una frase para ti que podría cambiar tu día&#8230;</string>
+    <string name="notification_settings_title">Notificaciones</string>
+    <string name="switch_on">Sí</string>
+    <string name="switch_off">No</string>
+    <string name="language_settings_title">Idioma</string>
+    <string name="button_ok">Aceptar</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="rate_title">Valorar %1$s</string>
+    <string name="rate_msg">Si disfrutas usando %1$s, por favor tómate un momento para valorarla. ¡Gracias por tu apoyo!</string>
+    <string name="rate_button">Valorar ahora</string>
+    <string name="remind_later_button">Recuérdamelo más tarde</string>
+    <string name="dont_rate_button">No, gracias</string>
+
+</resources>

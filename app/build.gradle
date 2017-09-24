@@ -1,0 +1,25 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "26.0.1"
+
+    defaultConfig {
+        applicationId "com.sofps.inspirationalquotes"
+        minSdkVersion 10
+        targetSdkVersion 19
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile files('libs/amazon-ads-5.4.78.jar')
+    compile files('libs/android-support-v13.jar')
+    compile files('libs/sqliteassethelper-2.0.1.jar')
+}
