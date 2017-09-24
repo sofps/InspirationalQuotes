@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,9 +28,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 
 	@BindView(R.id.quote) TextView textViewQuote;
 	@BindView(R.id.author) TextView textViewAuthor;
-
-
-	private static final String TAG = "QuotesSlidePageFragment";
 
 	public static final String ARG_PAGE = "page";
 	public static final String ARG_BACKGROUND = "background";
@@ -76,14 +72,11 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 		mFont = getArguments().getString(ARG_FONT);
 		mQuote = getArguments().getString(ARG_QUOTE);
 		mAuthor = getArguments().getString(ARG_AUTHOR);
-
-		Log.d(TAG, "onCreate " + mPageNumber);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		Log.d(TAG, "onCreateView " + mPageNumber);
 		rootView = (ViewGroup) inflater.inflate(
 				R.layout.fragment_quotes_slide_page, container, false);
 		rootView.setBackgroundResource(mBackground);
@@ -122,7 +115,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Log.d(TAG, "onOptionsItemSelected");
 		switch (item.getItemId()) {
 		case R.id.action_share:
 			ScreenshotLoader loader = new ScreenshotLoader();
@@ -156,7 +148,6 @@ public class QuotesSlidePageFragment extends Fragment implements QuotesSlidePage
 				dir = getActivity().getCacheDir();
 			}
 			File myPath = new File(dir, "IQ_" + UUID.randomUUID() + ".jpg");
-			Log.d(TAG, "Path: " + myPath.getAbsolutePath());
 			FileOutputStream fos = null;
 			try {
 				fos = new FileOutputStream(myPath);
