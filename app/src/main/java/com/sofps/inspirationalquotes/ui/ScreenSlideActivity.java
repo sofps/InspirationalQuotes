@@ -1,4 +1,4 @@
-package com.sofps.inspirationalquotes;
+package com.sofps.inspirationalquotes.ui;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -21,7 +21,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import com.sofps.inspirationalquotes.DataBaseHelper.QuoteCursor;
+import com.sofps.inspirationalquotes.AlarmReceiver;
+import com.sofps.inspirationalquotes.data.DataBaseHelper;
+import com.sofps.inspirationalquotes.data.DataBaseHelper.QuoteCursor;
+import com.sofps.inspirationalquotes.data.Quote;
+import com.sofps.inspirationalquotes.R;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;

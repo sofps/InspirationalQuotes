@@ -1,4 +1,4 @@
-package com.sofps.inspirationalquotes;
+package com.sofps.inspirationalquotes.util;
 
 import android.content.Context;
 import android.util.AttributeSet;

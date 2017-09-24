@@ -1,4 +1,4 @@
-package com.sofps.inspirationalquotes;
+package com.sofps.inspirationalquotes.ui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.widget.TextView;
+import com.sofps.inspirationalquotes.R;
 
 public class AppRater {
 

@@ -1,5 +1,6 @@
 package com.sofps.inspirationalquotes;
 
+import com.sofps.inspirationalquotes.ui.ScreenSlideActivity;
 import java.util.List;
 
 import android.app.ActivityManager;

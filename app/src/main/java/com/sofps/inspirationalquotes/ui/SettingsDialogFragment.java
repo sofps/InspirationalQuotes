@@ -1,5 +1,6 @@
-package com.sofps.inspirationalquotes;
+package com.sofps.inspirationalquotes.ui;
 
+import com.sofps.inspirationalquotes.R;
 import java.util.Arrays;
 
 import android.annotation.SuppressLint;

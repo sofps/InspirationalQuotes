@@ -1,4 +1,4 @@
-package com.sofps.inspirationalquotes;
+package com.sofps.inspirationalquotes.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -17,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import com.sofps.inspirationalquotes.R;
+import com.sofps.inspirationalquotes.util.LayoutedTextView;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
