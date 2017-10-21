@@ -65,8 +65,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 	private static final String DEFAULT_LANGUAGE = "EN";
 	private static final String IS_ICON_CREATED = "icon";
 
-	private static boolean startedFlag;
-
 	private int mCantPages;
 	private int mAvailableBackgrounds[] = { R.drawable.background1,
 			R.drawable.background2, R.drawable.background3,
@@ -134,9 +132,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (isFinishing()) {
-			startedFlag = false;
-		}
 		deletePrivateFiles();
 	}
 
@@ -292,7 +287,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			Quote quote = mQuotes.get(pos);
 
 			mDataBaseHelper.addOneTimeShowed(quote);
-			
+
 			return QuotesSlidePageFragment.create(position, background, font,
 					quote.getText(), quote.getAuthor());
 		}
@@ -468,11 +463,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			mPager.setPageTransformer(true, new ZoomOutPageTransformer());
 
 			setProgressBarIndeterminateVisibility(false);
-
-			if (!startedFlag) {
-				AppRater.app_launched(QuotesSlideActivity.this);
-				startedFlag = true;
-			}
 		}
 
 	}
