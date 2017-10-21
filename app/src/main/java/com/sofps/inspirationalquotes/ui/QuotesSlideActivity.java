@@ -292,10 +292,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			Quote quote = mQuotes.get(pos);
 
 			mDataBaseHelper.addOneTimeShowed(quote);
-
-			Log.d(TAG, "getItem " + position + ": " + "background: "
-					+ background + ", font: " + font);
-
+			
 			return QuotesSlidePageFragment.create(position, background, font,
 					quote.getText(), quote.getAuthor());
 		}
@@ -307,7 +304,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 		@Override
 		public int getItemPosition(Object object) {
-			Log.d(TAG, "getItemPosition");
 			return POSITION_NONE;
 		}
 
@@ -357,8 +353,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 		@SuppressWarnings("unchecked")
 		@Override
 		protected Void doInBackground(Bundle... params) {
-			Log.d(TAG, "doInBackground");
-
 			mPagerAdapter = new ScreenSlidePagerAdapter(
 					getSupportFragmentManager());
 
@@ -378,7 +372,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				if (savedInstanceState == null) {
 					Log.d(TAG, "Loading and shuffling fonts from assets");
 					String[] fonts = getAssets().list("font");
-					mFonts = new ArrayList<String>(Arrays.asList(fonts));
+					mFonts = new ArrayList<>(Arrays.asList(fonts));
 					Collections.shuffle(mFonts);
 				} else {
 					Log.d(TAG, "Loading fonts from bundle");
@@ -447,8 +441,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				Log.d(TAG, "Setting the alarm");
 				setAlarm();
 			} else {
-				mAlarmSet = savedInstanceState == null ? false
-						: savedInstanceState.getBoolean(ALARM_SET);
+				mAlarmSet = savedInstanceState != null && savedInstanceState.getBoolean(ALARM_SET);
 			}
 
 			if (!mPreferences.getBoolean(IS_ICON_CREATED, false)) {
