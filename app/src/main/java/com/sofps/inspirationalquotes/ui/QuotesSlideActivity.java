@@ -98,7 +98,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 	private boolean mAlarmSet;
 
 	private SharedPreferences mPreferences;
-	private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -320,12 +319,12 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				// Modify the default slide transition to shrink the page as
 				// well
 				float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
-				float vertMargin = pageHeight * (1 - scaleFactor) / 2;
-				float horzMargin = pageWidth * (1 - scaleFactor) / 2;
+				float verticalMargin = pageHeight * (1 - scaleFactor) / 2;
+				float horizontalMargin = pageWidth * (1 - scaleFactor) / 2;
 				if (position < 0) {
-					view.setTranslationX(horzMargin - vertMargin / 2);
+					view.setTranslationX(horizontalMargin - verticalMargin / 2);
 				} else {
-					view.setTranslationX(-horzMargin + vertMargin / 2);
+					view.setTranslationX(-horizontalMargin + verticalMargin / 2);
 				}
 
 				// Scale the page down (between MIN_SCALE and 1)
@@ -402,12 +401,9 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			}
 			mCantPages = mQuotes.size();
 
-			mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-				public void onSharedPreferenceChanged(SharedPreferences prefs,
-						String key) {
-					Log.d(TAG, "Shared Preferences were changed");
-					boolean newValue = prefs.getBoolean(PREF_NOTIFICATION_ENABLED,
-							true);
+			SharedPreferences.OnSharedPreferenceChangeListener prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+				public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+					boolean newValue = prefs.getBoolean(PREF_NOTIFICATION_ENABLED, true);
 					if (newValue && !mAlarmSet) {
 						// Notifications were enabled and alarm is not set
 						setAlarm();
@@ -417,8 +413,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 					}
 
 					String language = prefs.getString(PREF_LANGUAGE, null);
-					if (mCurrentLanguage != language) {
-						Log.d(TAG, "Language was modified");
+					if (!mCurrentLanguage.equals(language)) {
 						mCurrentLanguage = language;
 						loadQuotes();
 						mPagerAdapter.notifyDataSetChanged();
@@ -426,7 +421,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				}
 			};
 			mPreferences
-					.registerOnSharedPreferenceChangeListener(mPrefListener);
+					.registerOnSharedPreferenceChangeListener(prefListener);
 
 			if ((savedInstanceState == null || !savedInstanceState
 					.getBoolean(ALARM_SET))

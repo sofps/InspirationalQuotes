@@ -1,7 +1,7 @@
 <resources>
 
-    <dimen name="quote_size">26dp</dimen>
-    <dimen name="long_quote_size">15dp</dimen>
+    <dimen name="quote_size">26sp</dimen>
+    <dimen name="long_quote_size">15sp</dimen>
     <dimen name="quote_size_for_smaller_fonts">38dp</dimen>
     <dimen name="text_size">14sp</dimen>
     <dimen name="spinner_size">12sp</dimen>
