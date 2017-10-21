@@ -1,17 +1,15 @@
 package com.sofps.inspirationalquotes.ui;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -23,10 +21,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
@@ -47,6 +50,9 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
+
+	public static final String PREF_NOTIFICATION_ENABLED = "notificationEnabled";
+	public static final String PREF_LANGUAGE = "language";
 
 	private static final String TAG = "QuotesSlideActivity";
 
@@ -155,8 +161,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				loader.execute();
 				return true;
 			case R.id.action_settings:
-				DialogFragment dialog = new SettingsDialogFragment();
-				dialog.show(getSupportFragmentManager(), "SettingsDialogFragment");
+				showSettingsDialog();
 				return true;
 			case R.id.action_shuffle:
 				shuffleEverything();
@@ -166,6 +171,59 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void showSettingsDialog() {
+		MaterialDialog.Builder builder = new MaterialDialog.Builder(this).title(R.string.action_settings)
+				.customView(R.layout.dialog_settings, true)
+				.positiveText(R.string.button_ok)
+				.negativeText(R.string.button_cancel);
+
+		View view = builder.build().getCustomView();
+
+		final boolean notificationsEnabled = PreferenceManager.getDefaultSharedPreferences(this)
+				.getBoolean(PREF_NOTIFICATION_ENABLED, true);
+
+		final Switch enableNotificationsSwitch = view.findViewById(R.id.enable_notifications);
+		enableNotificationsSwitch.setChecked(notificationsEnabled);
+
+		final String languageSelected = PreferenceManager.getDefaultSharedPreferences(this)
+				.getString(PREF_LANGUAGE, null);
+		final Spinner spinner = view.findViewById(R.id.language_spinner);
+		// Create an ArrayAdapter using the string array and a default spinner layout
+		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.language_labels, R.layout.spinner_textview);
+		// Specify the layout to use when the list of choices appears
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		// Apply the adapter to the spinner
+		spinner.setAdapter(adapter);
+		// Select current language
+		int position = Arrays.asList(getResources().getStringArray(R.array.language_values))
+				.indexOf(languageSelected);
+		spinner.setSelection(position);
+
+		builder.onPositive(new MaterialDialog.SingleButtonCallback() {
+			@Override
+			public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+				// Check if notifications settings were changed
+				boolean currentValue = enableNotificationsSwitch.isChecked();
+				if (currentValue != notificationsEnabled) {
+					// If value was changed, persist
+					PreferenceManager.getDefaultSharedPreferences(QuotesSlideActivity.this)
+							.edit()
+							.putBoolean(PREF_NOTIFICATION_ENABLED, currentValue)
+							.apply();
+				}
+
+				// Check if language was changed
+				String currentLang = getResources().getStringArray(R.array.language_values)[spinner.getSelectedItemPosition()];
+				if (!currentLang.equals(languageSelected)) {
+					PreferenceManager.getDefaultSharedPreferences(QuotesSlideActivity.this)
+							.edit()
+							.putString(PREF_LANGUAGE, currentLang)
+							.apply();
+				}
+			}
+		}).show();
 	}
 
 	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {
@@ -255,7 +313,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 	}
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
 		private static final float MIN_SCALE = 0.85f;
 		private static final float MIN_ALPHA = 0.5f;
@@ -333,8 +390,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 			mDataBaseHelper = new DataBaseHelper(QuotesSlideActivity.this);
 			if (savedInstanceState == null) {
-				mCurrentLanguage = mPreferences.getString(
-						SettingsDialogFragment.PREF_LANGUAGE, null);
+				mCurrentLanguage = mPreferences.getString(PREF_LANGUAGE, null);
 				if (mCurrentLanguage == null) {
 					// The language preference is not set, set it
 					mCurrentLanguage = Locale.getDefault().getLanguage()
@@ -345,9 +401,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 					}
 					PreferenceManager
 							.getDefaultSharedPreferences(
-									getApplicationContext())
-							.edit()
-							.putString(SettingsDialogFragment.PREF_LANGUAGE,
+									getApplicationContext()).edit().putString(PREF_LANGUAGE,
 									mCurrentLanguage).commit();
 				}
 				Log.d(TAG, "The selected language is " + mCurrentLanguage);
@@ -363,8 +417,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 				public void onSharedPreferenceChanged(SharedPreferences prefs,
 						String key) {
 					Log.d(TAG, "Shared Preferences were changed");
-					boolean newValue = prefs.getBoolean(
-							SettingsDialogFragment.PREF_NOTIFICATION_ENABLED,
+					boolean newValue = prefs.getBoolean(PREF_NOTIFICATION_ENABLED,
 							true);
 					if (newValue && !mAlarmSet) {
 						// Notifications were enabled and alarm is not set
@@ -374,8 +427,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 						cancelAlarm();
 					}
 
-					String language = prefs.getString(
-							SettingsDialogFragment.PREF_LANGUAGE, null);
+					String language = prefs.getString(PREF_LANGUAGE, null);
 					if (mCurrentLanguage != language) {
 						Log.d(TAG, "Language was modified");
 						mCurrentLanguage = language;
@@ -389,8 +441,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 			if ((savedInstanceState == null || !savedInstanceState
 					.getBoolean(ALARM_SET))
-					&& mPreferences.getBoolean(
-							SettingsDialogFragment.PREF_NOTIFICATION_ENABLED,
+					&& mPreferences.getBoolean(PREF_NOTIFICATION_ENABLED,
 							true)) {
 				// First onCreate or alarm not set but should be
 				Log.d(TAG, "Setting the alarm");
@@ -416,16 +467,12 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			Log.d(TAG, "onPostExecute");
-
 			super.onPostExecute(result);
 
 			// Instantiate a ViewPager and a PagerAdapter.
-			mPager = (ViewPager) findViewById(R.id.pager);
+			mPager = findViewById(R.id.pager);
 			mPager.setAdapter(mPagerAdapter);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-				mPager.setPageTransformer(true, new ZoomOutPageTransformer());
-			}
+			mPager.setPageTransformer(true, new ZoomOutPageTransformer());
 
 			setProgressBarIndeterminateVisibility(false);
 
@@ -451,14 +498,12 @@ public class QuotesSlideActivity extends AppCompatActivity {
 	}
 
 	private void setAlarm() {
-		Log.d(TAG, "setAlarm");
 		AlarmReceiver alarm = new AlarmReceiver();
 		alarm.setAlarm(this);
 		mAlarmSet = true;
 	}
 
 	private void cancelAlarm() {
-		Log.d(TAG, "cancelAlarm");
 		AlarmReceiver alarm = new AlarmReceiver();
 		alarm.cancelAlarm(this);
 		mAlarmSet = false;
@@ -472,7 +517,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 	private void loadQuotes() {
 		QuoteCursor cursor = mDataBaseHelper.queryQuotes(mCurrentLanguage);
-		mQuotes = new ArrayList<Quote>();
+		mQuotes = new ArrayList<>();
 		while (cursor.moveToNext()) {
 			mQuotes.add(cursor.getQuote());
 		}

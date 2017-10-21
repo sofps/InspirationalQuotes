@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 26
     buildToolsVersion "26.0.1"
 
     defaultConfig {
         applicationId "com.sofps.inspirationalquotes"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
     }
 
     buildTypes {
@@ -19,11 +19,13 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v13:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:support-v13:26.0.1'
+    compile 'com.android.support:appcompat-v7:26.0.1'
+    compile 'com.android.support:design:26.0.1'
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
 
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+    compile 'com.afollestad.material-dialogs:core:0.9.4.7'
 }
