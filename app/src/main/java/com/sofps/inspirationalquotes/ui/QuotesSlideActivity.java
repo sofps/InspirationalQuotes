@@ -402,7 +402,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 					PreferenceManager
 							.getDefaultSharedPreferences(
 									getApplicationContext()).edit().putString(PREF_LANGUAGE,
-									mCurrentLanguage).commit();
+									mCurrentLanguage).apply();
 				}
 				Log.d(TAG, "The selected language is " + mCurrentLanguage);
 				loadQuotes();
@@ -453,7 +453,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 
 			if (!mPreferences.getBoolean(IS_ICON_CREATED, false)) {
 				addShortcut();
-				mPreferences.edit().putBoolean(IS_ICON_CREATED, true).commit();
+				mPreferences.edit().putBoolean(IS_ICON_CREATED, true).apply();
 			}
 
 			return null;
