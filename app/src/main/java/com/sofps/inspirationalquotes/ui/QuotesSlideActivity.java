@@ -52,6 +52,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
+    @BindView(R.id.pager) ViewPager mViewPager;
 
 	public static final String PREF_NOTIFICATION_ENABLED = "notificationEnabled";
 	public static final String PREF_LANGUAGE = "language";
@@ -91,7 +92,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 	private ArrayList<Quote> mQuotes = new ArrayList<>();
 	private String mCurrentLanguage;
 
-	private ViewPager mPager;
 	private PagerAdapter mPagerAdapter;
 
 	private boolean mAlarmSet;
@@ -105,15 +105,9 @@ public class QuotesSlideActivity extends AppCompatActivity
 
 		ButterKnife.bind(this);
 
-		setSupportActionBar(mToolbar);
-		// Hide app name and show logo instead
-		getSupportActionBar().setDisplayShowTitleEnabled(false);
-		mToolbar.setLogo(R.drawable.ic_launcher);
-
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-		mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-
+		loadToolbar();
 		loadBackgrounds(savedInstanceState);
 		loadFonts(savedInstanceState);
 		loadCurrentLanguage(savedInstanceState);
@@ -125,6 +119,13 @@ public class QuotesSlideActivity extends AppCompatActivity
 		// Workaround to prevent crash android.os.FileUriExposedException: file:///storage/emulated/0/Android/data ...
 		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 		StrictMode.setVmPolicy(builder.build());
+	}
+
+	private void loadToolbar() {
+		setSupportActionBar(mToolbar);
+		// Hide app name and show logo instead
+		getSupportActionBar().setDisplayShowTitleEnabled(false);
+		mToolbar.setLogo(R.drawable.ic_launcher);
 	}
 
 	private void listenForSharedPreferencesChanges() {
@@ -248,7 +249,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 	}
 
 	private void loadScreenshot() {
-		Bitmap screenshot = ScreenshotUtils.getScreenshot(mPager);
+		Bitmap screenshot = ScreenshotUtils.getScreenshot(mViewPager);
 		if (screenshot == null) {
 			Toast.makeText(this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
 					.show();
@@ -316,11 +317,10 @@ public class QuotesSlideActivity extends AppCompatActivity
 		mQuotes.addAll(quoteList);
 		mCantPages = mQuotes.size();
 
-		if (mPager == null) {
-			// Instantiate a ViewPager and a PagerAdapter.
-			mPager = findViewById(R.id.pager);
-			mPager.setAdapter(mPagerAdapter);
-			mPager.setPageTransformer(true, new ZoomOutPageTransformer());
+		if (mPagerAdapter == null) {
+			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+			mViewPager.setAdapter(mPagerAdapter);
+			mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
 		} else {
 			mPagerAdapter.notifyDataSetChanged();
 		}
