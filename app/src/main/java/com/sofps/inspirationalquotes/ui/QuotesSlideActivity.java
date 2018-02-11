@@ -32,9 +32,8 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.R;
-import com.sofps.inspirationalquotes.data.DataBaseHelper;
-import com.sofps.inspirationalquotes.data.DataBaseHelper.QuoteCursor;
 import com.sofps.inspirationalquotes.data.Quote;
+import com.sofps.inspirationalquotes.data.QuotesLoader;
 import com.sofps.inspirationalquotes.util.ScreenshotUtils;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -42,11 +41,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
-public class QuotesSlideActivity extends AppCompatActivity {
+public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoader.TaskListener {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
@@ -87,17 +87,16 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			R.drawable.background36 };
 	private int mBackgrounds[];
 	private ArrayList<String> mFonts = null;
-	private ArrayList<Quote> mQuotes = null;
+	private ArrayList<Quote> mQuotes = new ArrayList<>();
 	private String mCurrentLanguage;
 
 	private ViewPager mPager;
 	private PagerAdapter mPagerAdapter;
 
-	private DataBaseHelper mDataBaseHelper;
-
 	private boolean mAlarmSet;
 
 	private SharedPreferences mPreferences;
+	private QuotesLoader mQuotesLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -112,13 +111,97 @@ public class QuotesSlideActivity extends AppCompatActivity {
         mToolbar.setLogo(R.drawable.ic_launcher);
 
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+		mQuotesLoader = new QuotesLoader(this, this);
 
-		Loader loader = new Loader();
-		loader.execute(savedInstanceState);
+		mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+
+		// Load backgrounds
+		if (savedInstanceState == null) {
+			Log.d(TAG, "Loading and shuffling backgrounds");
+			mBackgrounds = mAvailableBackgrounds;
+			shuffleArray(mBackgrounds);
+		} else {
+			Log.d(TAG, "Loading backgrounds from bundle");
+			mBackgrounds = savedInstanceState.getIntArray(BACKGROUNDS);
+		}
+
+		// Load fonts
+		try {
+			if (savedInstanceState == null) {
+				Log.d(TAG, "Loading and shuffling fonts from assets");
+				String[] fonts = getAssets().list("font");
+				mFonts = new ArrayList<>(Arrays.asList(fonts));
+				Collections.shuffle(mFonts);
+			} else {
+				Log.d(TAG, "Loading fonts from bundle");
+				mFonts = savedInstanceState.getStringArrayList(FONTS);
+			}
+		} catch (IOException e) {
+			throw new Error("Unable to open fonts");
+		}
+
+		if (savedInstanceState == null) {
+			mCurrentLanguage = mPreferences.getString(PREF_LANGUAGE, null);
+			if (mCurrentLanguage == null) {
+				// The language preference is not set, set it
+				mCurrentLanguage = Locale.getDefault().getLanguage().toUpperCase();
+				if (!Arrays.asList(SUPPORTED_LANGUAGES).contains(mCurrentLanguage)) {
+					mCurrentLanguage = DEFAULT_LANGUAGE;
+				}
+				PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+						.edit()
+						.putString(PREF_LANGUAGE, mCurrentLanguage)
+						.apply();
+			}
+			Log.d(TAG, "The selected language is " + mCurrentLanguage);
+			loadQuotesForCurrentLanguage();
+		} else {
+			mCurrentLanguage = savedInstanceState.getString(LANGUAGE);
+			mQuotes.addAll((ArrayList<Quote>) savedInstanceState.getSerializable(QUOTES));
+		}
+
+		SharedPreferences.OnSharedPreferenceChangeListener prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+			public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+				boolean newValue = prefs.getBoolean(PREF_NOTIFICATION_ENABLED, true);
+				if (newValue && !mAlarmSet) {
+					// Notifications were enabled and alarm is not set
+					setAlarm();
+				} else if (!newValue && mAlarmSet) {
+					// Notifications were disabled and alarm is set
+					cancelAlarm();
+				}
+
+				String language = prefs.getString(PREF_LANGUAGE, null);
+				if (!mCurrentLanguage.equals(language)) {
+					mCurrentLanguage = language;
+					loadQuotesForCurrentLanguage();
+					mPagerAdapter.notifyDataSetChanged();
+				}
+			}
+		};
+		mPreferences.registerOnSharedPreferenceChangeListener(prefListener);
+
+		if ((savedInstanceState == null || !savedInstanceState.getBoolean(ALARM_SET))
+				&& mPreferences.getBoolean(PREF_NOTIFICATION_ENABLED, true)) {
+			// First onCreate or alarm not set but should be
+			Log.d(TAG, "Setting the alarm");
+			setAlarm();
+		} else {
+			mAlarmSet = savedInstanceState != null && savedInstanceState.getBoolean(ALARM_SET);
+		}
+
+		if (!mPreferences.getBoolean(IS_ICON_CREATED, false)) {
+			addShortcut();
+			mPreferences.edit().putBoolean(IS_ICON_CREATED, true).apply();
+		}
 
 		// Workaround to prevent crash android.os.FileUriExposedException: file:///storage/emulated/0/Android/data ...
 		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 		StrictMode.setVmPolicy(builder.build());
+	}
+
+	private void loadQuotesForCurrentLanguage() {
+		mQuotesLoader.execute(mCurrentLanguage);
 	}
 
 	@Override
@@ -220,6 +303,24 @@ public class QuotesSlideActivity extends AppCompatActivity {
 		}).show();
 	}
 
+	@Override
+	public void onTaskComplete(List<Quote> quoteList) {
+		mQuotes.addAll(quoteList);
+		mCantPages = mQuotes.size();
+
+		// Instantiate a ViewPager and a PagerAdapter.
+		mPager = findViewById(R.id.pager);
+		mPager.setAdapter(mPagerAdapter);
+		mPager.setPageTransformer(true, new ZoomOutPageTransformer());
+
+		setProgressBarIndeterminateVisibility(false);
+	}
+
+	@Override
+	public void onTaskInProgress() {
+		setProgressBarIndeterminateVisibility(true);
+	}
+
 	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {
 
 		private Bitmap mScreenshot;
@@ -285,7 +386,7 @@ public class QuotesSlideActivity extends AppCompatActivity {
 			pos = position % mQuotes.size();
 			Quote quote = mQuotes.get(pos);
 
-			mDataBaseHelper.addOneTimeShowed(quote);
+			// TODO to be implemented mDataBaseHelper.addOneTimeShowed(quote);
 
 			return QuotesSlidePageFragment.create(position, background, font,
 					quote.getText(), quote.getAuthor());
@@ -342,126 +443,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 		}
 	}
 
-	private class Loader extends AsyncTask<Bundle, Void, Void> {
-
-		@SuppressWarnings("unchecked")
-		@Override
-		protected Void doInBackground(Bundle... params) {
-			mPagerAdapter = new ScreenSlidePagerAdapter(
-					getSupportFragmentManager());
-
-			Bundle savedInstanceState = params[0];
-			// Load backgrounds
-			if (savedInstanceState == null) {
-				Log.d(TAG, "Loading and shuffling backgrounds");
-				mBackgrounds = mAvailableBackgrounds;
-				shuffleArray(mBackgrounds);
-			} else {
-				Log.d(TAG, "Loading backgrounds from bundle");
-				mBackgrounds = savedInstanceState.getIntArray(BACKGROUNDS);
-			}
-
-			// Load fonts
-			try {
-				if (savedInstanceState == null) {
-					Log.d(TAG, "Loading and shuffling fonts from assets");
-					String[] fonts = getAssets().list("font");
-					mFonts = new ArrayList<>(Arrays.asList(fonts));
-					Collections.shuffle(mFonts);
-				} else {
-					Log.d(TAG, "Loading fonts from bundle");
-					mFonts = savedInstanceState.getStringArrayList(FONTS);
-				}
-			} catch (IOException e) {
-				throw new Error("Unable to open fonts");
-			}
-
-			mDataBaseHelper = new DataBaseHelper(QuotesSlideActivity.this);
-			if (savedInstanceState == null) {
-				mCurrentLanguage = mPreferences.getString(PREF_LANGUAGE, null);
-				if (mCurrentLanguage == null) {
-					// The language preference is not set, set it
-					mCurrentLanguage = Locale.getDefault().getLanguage()
-							.toUpperCase();
-					if (!Arrays.asList(SUPPORTED_LANGUAGES).contains(
-							mCurrentLanguage)) {
-						mCurrentLanguage = DEFAULT_LANGUAGE;
-					}
-					PreferenceManager
-							.getDefaultSharedPreferences(
-									getApplicationContext()).edit().putString(PREF_LANGUAGE,
-									mCurrentLanguage).apply();
-				}
-				Log.d(TAG, "The selected language is " + mCurrentLanguage);
-				loadQuotes();
-			} else {
-				mCurrentLanguage = savedInstanceState.getString(LANGUAGE);
-				mQuotes = (ArrayList<Quote>) savedInstanceState
-						.getSerializable(QUOTES);
-			}
-			mCantPages = mQuotes.size();
-
-			SharedPreferences.OnSharedPreferenceChangeListener prefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-				public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-					boolean newValue = prefs.getBoolean(PREF_NOTIFICATION_ENABLED, true);
-					if (newValue && !mAlarmSet) {
-						// Notifications were enabled and alarm is not set
-						setAlarm();
-					} else if (!newValue && mAlarmSet) {
-						// Notifications were disabled and alarm is set
-						cancelAlarm();
-					}
-
-					String language = prefs.getString(PREF_LANGUAGE, null);
-					if (!mCurrentLanguage.equals(language)) {
-						mCurrentLanguage = language;
-						loadQuotes();
-						mPagerAdapter.notifyDataSetChanged();
-					}
-				}
-			};
-			mPreferences
-					.registerOnSharedPreferenceChangeListener(prefListener);
-
-			if ((savedInstanceState == null || !savedInstanceState
-					.getBoolean(ALARM_SET))
-					&& mPreferences.getBoolean(PREF_NOTIFICATION_ENABLED,
-							true)) {
-				// First onCreate or alarm not set but should be
-				Log.d(TAG, "Setting the alarm");
-				setAlarm();
-			} else {
-				mAlarmSet = savedInstanceState != null && savedInstanceState.getBoolean(ALARM_SET);
-			}
-
-			if (!mPreferences.getBoolean(IS_ICON_CREATED, false)) {
-				addShortcut();
-				mPreferences.edit().putBoolean(IS_ICON_CREATED, true).apply();
-			}
-
-			return null;
-		}
-
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			setProgressBarIndeterminateVisibility(true);
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-
-			// Instantiate a ViewPager and a PagerAdapter.
-			mPager = findViewById(R.id.pager);
-			mPager.setAdapter(mPagerAdapter);
-			mPager.setPageTransformer(true, new ZoomOutPageTransformer());
-
-			setProgressBarIndeterminateVisibility(false);
-		}
-
-	}
-
 	private void shuffleArray(int[] array) {
 		int index;
 		Random random = new Random();
@@ -491,15 +472,6 @@ public class QuotesSlideActivity extends AppCompatActivity {
 		shuffleArray(mBackgrounds);
 		Collections.shuffle(mFonts);
 		Collections.shuffle(mQuotes);
-	}
-
-	private void loadQuotes() {
-		QuoteCursor cursor = mDataBaseHelper.queryQuotes(mCurrentLanguage);
-		mQuotes = new ArrayList<>();
-		while (cursor.moveToNext()) {
-			mQuotes.add(cursor.getQuote());
-		}
-		cursor.close();
 	}
 
 	private void deletePrivateFiles() {
