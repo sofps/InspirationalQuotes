@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorWrapper;
-
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
 public class DataBaseHelper extends SQLiteAssetHelper {
@@ -30,6 +29,10 @@ public class DataBaseHelper extends SQLiteAssetHelper {
 		super(context, DB_NAME, null, DB_VERSION);
 	}
 
+	public Quote getQuote(String language) {
+		return queryQuotes(language).getQuote();
+	}
+
 	public QuoteCursor queryQuotes(String language) {
 		Cursor wrapped = getReadableDatabase().query(TABLE_QUOTE, null,
 				COLUMN_QUOTE_LANGUAGE + " = ?", new String[] { language },
@@ -43,6 +46,10 @@ public class DataBaseHelper extends SQLiteAssetHelper {
 		String[] whereArgs = { String.valueOf(quote.getId()) };
 		return getWritableDatabase().update(TABLE_QUOTE, cv, "_id = ?",
 				whereArgs);
+	}
+
+	public void insertQuote(Quote quote) {
+		getWritableDatabase().insert(TABLE_QUOTE, null, toContentValues(quote));
 	}
 
 	public static class QuoteCursor extends CursorWrapper {
@@ -72,6 +79,16 @@ public class DataBaseHelper extends SQLiteAssetHelper {
 			quote.setLanguage(language);
 			return quote;
 		}
+	}
+
+	private ContentValues toContentValues(Quote quote) {
+		ContentValues contentValues = new ContentValues();
+		// TODO contentValues.put(COLUMN_QUOTE_ID, );
+		contentValues.put(COLUMN_QUOTE_TEXT, quote.getText());
+		contentValues.put(COLUMN_QUOTE_AUTHOR, quote.getAuthor());
+		contentValues.put(COLUMN_QUOTE_LANGUAGE, quote.getLanguage());
+		contentValues.put(COLUMN_QUOTE_TIMES_SHOWED, quote.getTimesShowed());
+		return contentValues;
 	}
 
 }

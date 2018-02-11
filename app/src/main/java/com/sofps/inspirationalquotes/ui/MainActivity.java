@@ -28,6 +28,10 @@ import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.Injection;
 import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader;
+import com.sofps.inspirationalquotes.data.DataBaseHelper;
+import com.sofps.inspirationalquotes.data.QuotesService;
+import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource;
+import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource;
 import com.sofps.inspirationalquotes.util.LanguagePreferences;
 import com.sofps.inspirationalquotes.util.ScreenshotUtils;
 import java.io.File;
@@ -76,7 +80,11 @@ public class MainActivity extends AppCompatActivity implements
 		}
 
 		// TODO not sure if we need a reference to the presenter here
-		new QuotesSlidePresenter(mQuotesSlideFragment, Injection.provideQuotesRepository(Injection.provideDataBaseHelper(getApplicationContext())), mLanguagePreferences);
+		DataBaseHelper dataBaseHelper = Injection.provideDataBaseHelper(getApplicationContext());
+		QuotesLocalDataSource quotesLocalDataSource = Injection.provideQuotesLocalDataSource(dataBaseHelper);
+		QuotesService quotesService = Injection.provideQuotesService();
+		QuotesRemoteDataSource quotesRemoteDataSource = Injection.provideQuotesRemoteDataSource(quotesService);
+		new QuotesSlidePresenter(mQuotesSlideFragment, Injection.provideQuotesRepository(quotesLocalDataSource, quotesRemoteDataSource), mLanguagePreferences);
 	}
 
 	@Override

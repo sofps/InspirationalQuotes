@@ -13,6 +13,7 @@ public class Quote implements Serializable {
 
 	public Quote() {
 		mId = -1;
+		mTimesShowed = 0;
 	}
 
 	public long getId() {
