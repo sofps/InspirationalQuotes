@@ -1,6 +1,6 @@
 package com.sofps.inspirationalquotes;
 
-import com.sofps.inspirationalquotes.ui.QuotesSlideActivity;
+import com.sofps.inspirationalquotes.ui.MainActivity;
 import java.util.List;
 
 import android.app.ActivityManager;
@@ -59,7 +59,7 @@ public class SchedulingService extends IntentService {
 
 		// Intent triggered
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-				new Intent(this, QuotesSlideActivity.class), 0);
+				new Intent(this, MainActivity.class), 0);
 
 		// Define sound URI, the sound to be played when there's a notification
 		Uri soundUri = RingtoneManager

@@ -6,10 +6,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -17,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -27,92 +26,53 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.R;
-import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader;
-import com.sofps.inspirationalquotes.data.Quote;
+import com.sofps.inspirationalquotes.util.LanguagePreferences;
 import com.sofps.inspirationalquotes.util.ScreenshotUtils;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
 
-public class QuotesSlideActivity extends AppCompatActivity
-		implements QuotesLoader.QuotesLoaderTaskListener,
+public class MainActivity extends AppCompatActivity implements
 		ScreenshotLoader.ScreenshotLoaderTaskListener,
-		SharedPreferences.OnSharedPreferenceChangeListener {
+		SharedPreferences.OnSharedPreferenceChangeListener,
+		LanguagePreferences.LanguagePreferencesListener {
 
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
-    @BindView(R.id.pager) ViewPager mViewPager;
+	@BindView(R.id.toolbar) Toolbar mToolbar;
+	@BindView(R.id.progress_spinner) ProgressBar mProgressBar;
+	@BindView(R.id.container) FrameLayout mContainer;
 
 	public static final String PREF_NOTIFICATION_ENABLED = "notificationEnabled";
-	public static final String PREF_LANGUAGE = "language";
 
-	private static final String TAG = "QuotesSlideActivity";
+	private static final String TAG = "MainActivity";
 
 	private static final String ALARM_SET = "alarm_set";
-	private static final String FONTS = "fonts";
-	private static final String QUOTES = "quotes";
-	private static final String BACKGROUNDS = "backgrounds";
 	private static final String LANGUAGE = "language";
-	private static final String[] SUPPORTED_LANGUAGES = { "EN", "ES" };
-	private static final String DEFAULT_LANGUAGE = "EN";
-
-	private int mAvailableBackgrounds[] = { R.drawable.background1,
-			R.drawable.background2, R.drawable.background3,
-			R.drawable.background4, R.drawable.background5,
-			R.drawable.background6, R.drawable.background7,
-			R.drawable.background8, R.drawable.background9,
-			R.drawable.background10, R.drawable.background11,
-			R.drawable.background12, R.drawable.background13,
-			R.drawable.background14, R.drawable.background15,
-			R.drawable.background16, R.drawable.background17,
-			R.drawable.background18, R.drawable.background19,
-			R.drawable.background20, R.drawable.background21,
-			R.drawable.background22, R.drawable.background23,
-			R.drawable.background24, R.drawable.background25,
-			R.drawable.background26, R.drawable.background27,
-			R.drawable.background28, R.drawable.background29,
-			R.drawable.background30, R.drawable.background31,
-			R.drawable.background32, R.drawable.background33,
-			R.drawable.background34, R.drawable.background35,
-			R.drawable.background36 };
-	private ArrayList<Integer> mBackgrounds;
-	private ArrayList<String> mFonts = null;
-	private ArrayList<Quote> mQuotes = new ArrayList<>();
-	private String mCurrentLanguage;
-
-	private ScreenSlidePagerAdapter mPagerAdapter;
 
 	private boolean mAlarmSet;
 
 	private SharedPreferences mPreferences;
+	private LanguagePreferences mLanguagePreferences;
+
+	private QuotesSlideFragment mQuotesSlideFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_quotes_slide);
+		setContentView(R.layout.activity_main);
 
 		ButterKnife.bind(this);
 
-		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
 		loadToolbar();
-		loadBackgrounds(savedInstanceState);
-		loadFonts(savedInstanceState);
-		loadCurrentLanguage(savedInstanceState);
-		loadQuotes(savedInstanceState);
+		loadPreferences();
 		loadAlarm(savedInstanceState);
 
-		listenForSharedPreferencesChanges();
-
-		// Workaround to prevent crash android.os.FileUriExposedException: file:///storage/emulated/0/Android/data ...
-		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-		StrictMode.setVmPolicy(builder.build());
+		if (savedInstanceState == null) {
+			mQuotesSlideFragment = new QuotesSlideFragment();
+			getSupportFragmentManager().beginTransaction()
+					.add(R.id.container, mQuotesSlideFragment)
+					.commit();
+		}
 	}
 
 	@Override
@@ -126,19 +86,16 @@ public class QuotesSlideActivity extends AppCompatActivity
 	protected void onDestroy() {
 		super.onDestroy();
 		deletePrivateFiles();
+		mLanguagePreferences.unregisterListeners();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putIntegerArrayList(BACKGROUNDS, mBackgrounds);
-		outState.putStringArrayList(FONTS, mFonts);
-		outState.putSerializable(QUOTES, mQuotes);
 		if (mAlarmSet) {
 			// Save alarm status only when it's set
 			outState.putBoolean(ALARM_SET, mAlarmSet);
 		}
-		outState.putString(LANGUAGE, mCurrentLanguage);
 	}
 
 	@Override
@@ -151,34 +108,15 @@ public class QuotesSlideActivity extends AppCompatActivity
 				showSettingsDialog();
 				return true;
 			case R.id.action_shuffle:
-				mPagerAdapter.shuffle();
+				// TODO improve
+				if (mQuotesSlideFragment != null) {
+					mQuotesSlideFragment.shuffle();
+				}
 				return true;
 
 			default:
 				return super.onOptionsItemSelected(item);
 		}
-	}
-
-	@Override
-	public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
-		mQuotes.clear();
-		mQuotes.addAll(quoteList);
-
-		if (mPagerAdapter == null) {
-			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), mBackgrounds, mFonts);
-			mViewPager.setAdapter(mPagerAdapter);
-			mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
-			mPagerAdapter.setQuotes(mQuotes);
-		} else {
-			mPagerAdapter.setQuotes(mQuotes);
-		}
-
-		setProgressBarIndeterminateVisibility(false);
-	}
-
-	@Override
-	public void onQuotesLoaderTaskInProgress() {
-		setProgressBarIndeterminateVisibility(true);
 	}
 
 	@Override
@@ -208,12 +146,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 			// Notifications were disabled and alarm is set
 			cancelAlarm();
 		}
-
-		String language = sharedPreferences.getString(PREF_LANGUAGE, null);
-		if (!mCurrentLanguage.equals(language)) {
-			mCurrentLanguage = language;
-			loadQuotesForCurrentLanguage();
-		}
 	}
 
 	private void loadToolbar() {
@@ -223,8 +155,12 @@ public class QuotesSlideActivity extends AppCompatActivity
 		mToolbar.setLogo(R.drawable.ic_launcher);
 	}
 
-	private void listenForSharedPreferencesChanges() {
+	private void loadPreferences() {
+		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		mPreferences.registerOnSharedPreferenceChangeListener(this);
+
+		mLanguagePreferences = new LanguagePreferences(mPreferences);
+		mLanguagePreferences.setLanguagePreferencesListener(this);
 	}
 
 	private void loadAlarm(Bundle savedInstanceState) {
@@ -238,71 +174,8 @@ public class QuotesSlideActivity extends AppCompatActivity
 		}
 	}
 
-	private void loadQuotes(Bundle savedInstanceState) {
-		if (savedInstanceState == null) {
-			loadQuotesForCurrentLanguage();
-		} else {
-			mQuotes.addAll((ArrayList<Quote>) savedInstanceState.getSerializable(QUOTES));
-		}
-	}
-
-	private void loadCurrentLanguage(Bundle savedInstanceState) {
-		if (savedInstanceState == null) {
-			mCurrentLanguage = mPreferences.getString(PREF_LANGUAGE, null);
-			if (mCurrentLanguage == null) {
-				// The language preference is not set, set it
-				mCurrentLanguage = Locale.getDefault().getLanguage().toUpperCase();
-				if (!Arrays.asList(SUPPORTED_LANGUAGES).contains(mCurrentLanguage)) {
-					mCurrentLanguage = DEFAULT_LANGUAGE;
-				}
-				PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-						.edit()
-						.putString(PREF_LANGUAGE, mCurrentLanguage)
-						.apply();
-			}
-		} else {
-			mCurrentLanguage = savedInstanceState.getString(LANGUAGE);
-		}
-	}
-
-	private void loadFonts(Bundle savedInstanceState) {
-		// Load fonts
-		try {
-			if (savedInstanceState == null) {
-				String[] fonts = getAssets().list("font");
-				mFonts = new ArrayList<>(Arrays.asList(fonts));
-				Collections.shuffle(mFonts);
-			} else {
-				Log.d(TAG, "Loading fonts from bundle");
-				mFonts = savedInstanceState.getStringArrayList(FONTS);
-			}
-		} catch (IOException e) {
-			throw new Error("Unable to open fonts");
-		}
-	}
-
-	private void loadBackgrounds(Bundle savedInstanceState) {
-		// Load backgrounds
-		if (savedInstanceState == null) {
-			Log.d(TAG, "Loading and shuffling backgrounds");
-
-			mBackgrounds = new ArrayList<>(mAvailableBackgrounds.length);
-			for (int i = 0; i < mAvailableBackgrounds.length; i++) {
-				mBackgrounds.add(mAvailableBackgrounds[i]);
-			}
-			Collections.shuffle(mBackgrounds);
-		} else {
-			Log.d(TAG, "Loading backgrounds from bundle");
-			mBackgrounds = savedInstanceState.getIntegerArrayList(BACKGROUNDS);
-		}
-	}
-
-	private void loadQuotesForCurrentLanguage() {
-		new QuotesLoader(this, this).execute(mCurrentLanguage);
-	}
-
 	private void loadScreenshot() {
-		Bitmap screenshot = ScreenshotUtils.getScreenshot(mViewPager);
+		Bitmap screenshot = ScreenshotUtils.getScreenshot(mContainer);
 		if (screenshot == null) {
 			Toast.makeText(this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
 					.show();
@@ -325,8 +198,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 		final Switch enableNotificationsSwitch = view.findViewById(R.id.enable_notifications);
 		enableNotificationsSwitch.setChecked(notificationsEnabled);
 
-		final String languageSelected = PreferenceManager.getDefaultSharedPreferences(this)
-				.getString(PREF_LANGUAGE, null);
+		final String languageSelected = mLanguagePreferences.getLanguage();
 		final Spinner spinner = view.findViewById(R.id.language_spinner);
 		// Create an ArrayAdapter using the string array and a default spinner layout
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.language_labels, R.layout.spinner_textview);
@@ -346,7 +218,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 				boolean currentValue = enableNotificationsSwitch.isChecked();
 				if (currentValue != notificationsEnabled) {
 					// If value was changed, persist
-					PreferenceManager.getDefaultSharedPreferences(QuotesSlideActivity.this)
+					PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
 							.edit()
 							.putBoolean(PREF_NOTIFICATION_ENABLED, currentValue)
 							.apply();
@@ -355,10 +227,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 				// Check if language was changed
 				String currentLang = getResources().getStringArray(R.array.language_values)[spinner.getSelectedItemPosition()];
 				if (!currentLang.equals(languageSelected)) {
-					PreferenceManager.getDefaultSharedPreferences(QuotesSlideActivity.this)
-							.edit()
-							.putString(PREF_LANGUAGE, currentLang)
-							.apply();
+					mLanguagePreferences.setLanguage(currentLang);
 				}
 			}
 		}).show();
@@ -416,43 +285,10 @@ public class QuotesSlideActivity extends AppCompatActivity
 		}
 	}
 
-	private static class ZoomOutPageTransformer implements ViewPager.PageTransformer {
-		private static final float MIN_SCALE = 0.85f;
-		private static final float MIN_ALPHA = 0.5f;
-
-		public void transformPage(View view, float position) {
-			int pageWidth = view.getWidth();
-			int pageHeight = view.getHeight();
-
-			if (position < -1) { // [-Infinity,-1)
-				// This page is way off-screen to the left.
-				view.setAlpha(0);
-
-			} else if (position <= 1) { // [-1,1]
-				// Modify the default slide transition to shrink the page as
-				// well
-				float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
-				float verticalMargin = pageHeight * (1 - scaleFactor) / 2;
-				float horizontalMargin = pageWidth * (1 - scaleFactor) / 2;
-				if (position < 0) {
-					view.setTranslationX(horizontalMargin - verticalMargin / 2);
-				} else {
-					view.setTranslationX(-horizontalMargin + verticalMargin / 2);
-				}
-
-				// Scale the page down (between MIN_SCALE and 1)
-				view.setScaleX(scaleFactor);
-				view.setScaleY(scaleFactor);
-
-				// Fade the page relative to its size.
-				view.setAlpha(MIN_ALPHA + (scaleFactor - MIN_SCALE)
-						/ (1 - MIN_SCALE) * (1 - MIN_ALPHA));
-
-			} else { // (1,+Infinity]
-				// This page is way off-screen to the right.
-				view.setAlpha(0);
-			}
+	@Override
+	public void onLanguageChange() {
+		if (mQuotesSlideFragment != null) {
+			mQuotesSlideFragment.loadQuotesForCurrentLanguage();
 		}
 	}
-
 }
