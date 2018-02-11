@@ -9,10 +9,6 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -43,7 +39,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 public class QuotesSlideActivity extends AppCompatActivity
 		implements QuotesLoader.QuotesLoaderTaskListener,
@@ -67,7 +62,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 	private static final String[] SUPPORTED_LANGUAGES = { "EN", "ES" };
 	private static final String DEFAULT_LANGUAGE = "EN";
 
-	private int mCantPages;
 	private int mAvailableBackgrounds[] = { R.drawable.background1,
 			R.drawable.background2, R.drawable.background3,
 			R.drawable.background4, R.drawable.background5,
@@ -87,12 +81,12 @@ public class QuotesSlideActivity extends AppCompatActivity
 			R.drawable.background32, R.drawable.background33,
 			R.drawable.background34, R.drawable.background35,
 			R.drawable.background36 };
-	private int mBackgrounds[];
+	private ArrayList<Integer> mBackgrounds;
 	private ArrayList<String> mFonts = null;
 	private ArrayList<Quote> mQuotes = new ArrayList<>();
 	private String mCurrentLanguage;
 
-	private PagerAdapter mPagerAdapter;
+	private ScreenSlidePagerAdapter mPagerAdapter;
 
 	private boolean mAlarmSet;
 
@@ -174,7 +168,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		// Load fonts
 		try {
 			if (savedInstanceState == null) {
-				Log.d(TAG, "Loading and shuffling fonts from assets");
 				String[] fonts = getAssets().list("font");
 				mFonts = new ArrayList<>(Arrays.asList(fonts));
 				Collections.shuffle(mFonts);
@@ -191,11 +184,15 @@ public class QuotesSlideActivity extends AppCompatActivity
 		// Load backgrounds
 		if (savedInstanceState == null) {
 			Log.d(TAG, "Loading and shuffling backgrounds");
-			mBackgrounds = mAvailableBackgrounds;
-			shuffleArray(mBackgrounds);
+
+			mBackgrounds = new ArrayList<>(mAvailableBackgrounds.length);
+			for (int i = 0; i < mAvailableBackgrounds.length; i++) {
+				mBackgrounds.add(mAvailableBackgrounds[i]);
+			}
+			Collections.shuffle(mBackgrounds);
 		} else {
 			Log.d(TAG, "Loading backgrounds from bundle");
-			mBackgrounds = savedInstanceState.getIntArray(BACKGROUNDS);
+			mBackgrounds = savedInstanceState.getIntegerArrayList(BACKGROUNDS);
 		}
 	}
 
@@ -219,7 +216,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putIntArray(BACKGROUNDS, mBackgrounds);
+		outState.putIntegerArrayList(BACKGROUNDS, mBackgrounds);
 		outState.putStringArrayList(FONTS, mFonts);
 		outState.putSerializable(QUOTES, mQuotes);
 		if (mAlarmSet) {
@@ -239,8 +236,7 @@ public class QuotesSlideActivity extends AppCompatActivity
 				showSettingsDialog();
 				return true;
 			case R.id.action_shuffle:
-				shuffleEverything();
-				mPagerAdapter.notifyDataSetChanged();
+				mPagerAdapter.shuffle();
 				return true;
 
 			default:
@@ -315,14 +311,14 @@ public class QuotesSlideActivity extends AppCompatActivity
 	public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
 		mQuotes.clear();
 		mQuotes.addAll(quoteList);
-		mCantPages = mQuotes.size();
 
 		if (mPagerAdapter == null) {
-			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), mBackgrounds, mFonts);
 			mViewPager.setAdapter(mPagerAdapter);
 			mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+			mPagerAdapter.setQuotes(mQuotes);
 		} else {
-			mPagerAdapter.notifyDataSetChanged();
+			mPagerAdapter.setQuotes(mQuotes);
 		}
 
 		setProgressBarIndeterminateVisibility(false);
@@ -379,41 +375,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		}
 	}
 
-	private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
-
-		public ScreenSlidePagerAdapter(FragmentManager fm) {
-			super(fm);
-		}
-
-		@Override
-		public Fragment getItem(int position) {
-			int pos = position % mBackgrounds.length;
-			int background = mBackgrounds[pos];
-
-			pos = position % mFonts.size();
-			String font = "font/" + mFonts.get(pos);
-
-			pos = position % mQuotes.size();
-			Quote quote = mQuotes.get(pos);
-
-			// TODO to be implemented mDataBaseHelper.addOneTimeShowed(quote);
-
-			return QuotesSlidePageFragment.create(position, background, font,
-					quote.getText(), quote.getAuthor());
-		}
-
-		@Override
-		public int getCount() {
-			return mCantPages;
-		}
-
-		@Override
-		public int getItemPosition(Object object) {
-			return POSITION_NONE;
-		}
-
-	}
-
 	private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
 		private static final float MIN_SCALE = 0.85f;
 		private static final float MIN_ALPHA = 0.5f;
@@ -453,19 +414,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		}
 	}
 
-	private void shuffleArray(int[] array) {
-		int index;
-		Random random = new Random();
-		for (int i = array.length - 1; i > 0; i--) {
-			index = random.nextInt(i + 1);
-			if (index != i) {
-				array[index] ^= array[i];
-				array[i] ^= array[index];
-				array[index] ^= array[i];
-			}
-		}
-	}
-
 	private void setAlarm() {
 		AlarmReceiver alarm = new AlarmReceiver();
 		alarm.setAlarm(this);
@@ -476,12 +424,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		AlarmReceiver alarm = new AlarmReceiver();
 		alarm.cancelAlarm(this);
 		mAlarmSet = false;
-	}
-
-	private void shuffleEverything() {
-		shuffleArray(mBackgrounds);
-		Collections.shuffle(mFonts);
-		Collections.shuffle(mQuotes);
 	}
 
 	private void deletePrivateFiles() {
