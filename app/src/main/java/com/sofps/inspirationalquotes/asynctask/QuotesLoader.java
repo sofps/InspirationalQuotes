@@ -1,22 +1,24 @@
-package com.sofps.inspirationalquotes.data;
+package com.sofps.inspirationalquotes.asynctask;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import com.sofps.inspirationalquotes.data.DataBaseHelper;
+import com.sofps.inspirationalquotes.data.Quote;
 import java.util.ArrayList;
 import java.util.List;
 
 public class QuotesLoader extends AsyncTask<String, Void, List<Quote>> {
 
-    public interface TaskListener {
-        void onTaskComplete(List<Quote> quoteList);
+    public interface QuotesLoaderTaskListener {
+        void onQuotesLoaderTaskComplete(List<Quote> quoteList);
 
-        void onTaskInProgress();
+        void onQuotesLoaderTaskInProgress();
     }
 
     private final DataBaseHelper mDataBaseHelper;
-    private final TaskListener mTaskListener;
+    private final QuotesLoaderTaskListener mTaskListener;
 
-    public QuotesLoader(Context context, TaskListener listener) {
+    public QuotesLoader(Context context, QuotesLoaderTaskListener listener) {
         mDataBaseHelper = new DataBaseHelper(context);
         mTaskListener = listener;
     }
@@ -30,13 +32,13 @@ public class QuotesLoader extends AsyncTask<String, Void, List<Quote>> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        mTaskListener.onTaskInProgress();
+        mTaskListener.onQuotesLoaderTaskInProgress();
     }
 
     @Override
     protected void onPostExecute(List<Quote> quotes) {
         super.onPostExecute(quotes);
-        mTaskListener.onTaskComplete(quotes);
+        mTaskListener.onQuotesLoaderTaskComplete(quotes);
     }
 
     private List<Quote> getQuotes(String language) {

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -32,8 +31,9 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.R;
+import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
+import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader;
 import com.sofps.inspirationalquotes.data.Quote;
-import com.sofps.inspirationalquotes.data.QuotesLoader;
 import com.sofps.inspirationalquotes.util.ScreenshotUtils;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -44,9 +44,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.UUID;
 
-public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoader.TaskListener {
+public class QuotesSlideActivity extends AppCompatActivity
+		implements QuotesLoader.QuotesLoaderTaskListener,
+		ScreenshotLoader.ScreenshotLoaderTaskListener {
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.progress_spinner) ProgressBar mProgressBar;
@@ -96,7 +97,6 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 	private boolean mAlarmSet;
 
 	private SharedPreferences mPreferences;
-	private QuotesLoader mQuotesLoader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +111,6 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
         mToolbar.setLogo(R.drawable.ic_launcher);
 
 		mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-		mQuotesLoader = new QuotesLoader(this, this);
 
 		mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
 
@@ -201,7 +200,7 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 	}
 
 	private void loadQuotesForCurrentLanguage() {
-		mQuotesLoader.execute(mCurrentLanguage);
+		new QuotesLoader(this, this).execute(mCurrentLanguage);
 	}
 
 	@Override
@@ -234,8 +233,7 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.action_share:
-				ScreenshotLoader loader = new ScreenshotLoader();
-				loader.execute();
+				loadScreenshot();
 				return true;
 			case R.id.action_settings:
 				showSettingsDialog();
@@ -248,6 +246,16 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void loadScreenshot() {
+		Bitmap screenshot = ScreenshotUtils.getScreenshot(mPager);
+		if (screenshot == null) {
+			Toast.makeText(this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
+					.show();
+			return;
+		}
+		new ScreenshotLoader(this, this).execute(screenshot);
 	}
 
 	private void showSettingsDialog() {
@@ -304,7 +312,7 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 	}
 
 	@Override
-	public void onTaskComplete(List<Quote> quoteList) {
+	public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
 		mQuotes.addAll(quoteList);
 		mCantPages = mQuotes.size();
 
@@ -317,46 +325,26 @@ public class QuotesSlideActivity extends AppCompatActivity implements QuotesLoad
 	}
 
 	@Override
-	public void onTaskInProgress() {
+	public void onQuotesLoaderTaskInProgress() {
 		setProgressBarIndeterminateVisibility(true);
 	}
 
-	private class ScreenshotLoader extends AsyncTask<Void, Void, File> {
-
-		private Bitmap mScreenshot;
-
-		@Override
-		protected File doInBackground(Void... arg0) {
-			File file = null;
-			if (mScreenshot != null) {
-				File saveFile = ScreenshotUtils.getMainDirectoryName(QuotesSlideActivity.this); // Get the path to save screenshot
-                String filename = "IQ_" + UUID.randomUUID() + ".jpg";
-                file = ScreenshotUtils.store(mScreenshot, filename, saveFile); // Save the screenshot to selected path
-            } else {
-                Toast.makeText(QuotesSlideActivity.this, R.string.quote_share_failed, Toast.LENGTH_SHORT)
-						.show();
-			}
-
-			return file;
+	@Override
+	public void onScreenshotLoaderTaskComplete(File file) {
+		if (file == null) {
+			// TODO show error
+			return;
 		}
 
-		@Override
-		protected void onPreExecute() {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mScreenshot = ScreenshotUtils.getScreenshot(mPager);
-        }
+		shareScreenshot(file);
 
-		@Override
-		protected void onPostExecute(File result) {
-			if (result == null) {
-				throw new Error("File not found");
-			}
+		mProgressBar.setVisibility(View.INVISIBLE);
+	}
 
-			shareScreenshot(result);
-
-            mProgressBar.setVisibility(View.INVISIBLE);
-        }
-    }
+	@Override
+	public void onScreenshotLoaderTaskInProgress() {
+		mProgressBar.setVisibility(View.VISIBLE);
+	}
 
 	private void shareScreenshot(File file) {
 		Uri uri = Uri.fromFile(file); // Convert file path into Uri for sharing
