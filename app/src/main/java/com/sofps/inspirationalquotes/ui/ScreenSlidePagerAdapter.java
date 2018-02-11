@@ -11,15 +11,21 @@ import java.util.List;
 
 public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
+    public interface QuoteListener {
+        void onQuoteShow(Quote quote);
+    }
+
     private final List<Quote> mQuotes;
     private final List<Integer> mBackgrounds;
     private final List<String> mFonts;
+    private final QuoteListener mQuoteListener;
 
-    public ScreenSlidePagerAdapter(FragmentManager fm, List<Integer> backgrounds, List<String> fonts) {
+    public ScreenSlidePagerAdapter(FragmentManager fm, List<Integer> backgrounds, List<String> fonts, QuoteListener quoteListener) {
         super(fm);
         mBackgrounds = backgrounds;
         mFonts = fonts;
         mQuotes = new ArrayList<>();
+        mQuoteListener = quoteListener;
     }
 
     public void setQuotes(List<Quote> quotes) {
@@ -36,10 +42,10 @@ public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         int fontPosition = position % mFonts.size();
         String font = "font/" + mFonts.get(fontPosition);
 
-        fontPosition = position % mQuotes.size();
-        Quote quote = mQuotes.get(fontPosition);
+        int quotePosition = position % mQuotes.size();
+        Quote quote = mQuotes.get(quotePosition);
 
-        // TODO to be implemented mDataBaseHelper.addOneTimeShowed(quote);
+        mQuoteListener.onQuoteShow(quote);
 
         return QuotesSlidePageFragment.create(position, background, font, quote.getText(), quote.getAuthor());
     }

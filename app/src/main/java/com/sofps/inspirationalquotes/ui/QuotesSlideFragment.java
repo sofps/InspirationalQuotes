@@ -2,7 +2,7 @@ package com.sofps.inspirationalquotes.ui;
 
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -17,13 +17,14 @@ import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.util.LanguagePreferences;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class QuotesSlideFragment extends android.support.v4.app.Fragment
-        implements QuotesLoader.QuotesLoaderTaskListener {
+        implements QuotesSlideContract.View {
 
     @BindView(R.id.pager) ViewPager mViewPager;
 
@@ -49,12 +50,12 @@ public class QuotesSlideFragment extends android.support.v4.app.Fragment
     };
     private ArrayList<Integer> mBackgrounds;
     private ArrayList<String> mFonts = null;
-    private ArrayList<Quote> mQuotes = new ArrayList<>();
 
     private ScreenSlidePagerAdapter mPagerAdapter;
 
     private Unbinder mUnbinder;
-    private LanguagePreferences mLanguagePreferences;
+
+    private QuotesSlideContract.Presenter mPresenter;
 
     @Nullable
     @Override
@@ -68,15 +69,16 @@ public class QuotesSlideFragment extends android.support.v4.app.Fragment
         super.onViewCreated(view, savedInstanceState);
         mUnbinder = ButterKnife.bind(this, view);
 
-        mLanguagePreferences = new LanguagePreferences(PreferenceManager.getDefaultSharedPreferences(getActivity()));
+        //mLanguagePreferences = new LanguagePreferences(PreferenceManager.getDefaultSharedPreferences(getActivity()));
 
         loadBackgrounds(savedInstanceState);
         loadFonts(savedInstanceState);
-        loadQuotes(savedInstanceState);
 
         // Workaround to prevent crash android.os.FileUriExposedException: file:///storage/emulated/0/Android/data ...
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
+
+        mPresenter.start();
     }
 
     @Override
@@ -88,41 +90,25 @@ public class QuotesSlideFragment extends android.support.v4.app.Fragment
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putIntegerArrayList(BACKGROUNDS, mBackgrounds);
         outState.putStringArrayList(FONTS, mFonts);
-        outState.putSerializable(QUOTES, mQuotes);
+        outState.putSerializable(QUOTES, (Serializable) mPresenter.getQuotes());
     }
 
     @Override
-    public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
-        mQuotes.clear();
-        mQuotes.addAll(quoteList);
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
 
-        if (mPagerAdapter == null) {
-            mPagerAdapter = new ScreenSlidePagerAdapter(getActivity().getSupportFragmentManager(), mBackgrounds, mFonts);
-            mViewPager.setAdapter(mPagerAdapter);
-            mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
-            mPagerAdapter.setQuotes(mQuotes);
-        } else {
-            mPagerAdapter.setQuotes(mQuotes);
+        if (savedInstanceState != null) {
+            mPresenter.setQuotes((List<Quote>) savedInstanceState.getSerializable(QUOTES));
         }
-
-        // TODO setProgressBarIndeterminateVisibility(false);
     }
 
     @Override
-    public void onQuotesLoaderTaskInProgress() {
-        // TODO setProgressBarIndeterminateVisibility(true);
-    }
-
-    private void loadQuotes(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            loadQuotesForCurrentLanguage();
-        } else {
-            mQuotes.addAll((ArrayList<Quote>) savedInstanceState.getSerializable(QUOTES));
-        }
+    public void setPresenter(QuotesSlideContract.Presenter presenter) {
+        mPresenter = presenter;
     }
 
     private void loadFonts(Bundle savedInstanceState) {
@@ -157,12 +143,31 @@ public class QuotesSlideFragment extends android.support.v4.app.Fragment
         }
     }
 
-    public void loadQuotesForCurrentLanguage() {
-        new QuotesLoader(getActivity(), this).execute(mLanguagePreferences.getLanguage());
-    }
-
     public void shuffle() {
         mPagerAdapter.shuffle();
+    }
+
+    @Override
+    public void initialize() {
+        if (mPagerAdapter == null) { // TODO is this check necessary?
+            mPagerAdapter = new ScreenSlidePagerAdapter(getActivity().getSupportFragmentManager(), mBackgrounds, mFonts, mPresenter);
+            mViewPager.setAdapter(mPagerAdapter);
+            mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        }
+    }
+
+    @Override
+    public void setQuotes(List<Quote> quotes) {
+        mPagerAdapter.setQuotes(quotes);
+    }
+
+    @Override
+    public void showProgress(boolean show) {
+        // TODO setProgressBarIndeterminateVisibility(show);
+    }
+
+    public void onLanguageChange() {
+        mPresenter.onLanguageChange();
     }
 
     private static class ZoomOutPageTransformer implements ViewPager.PageTransformer {

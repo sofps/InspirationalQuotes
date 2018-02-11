@@ -25,6 +25,7 @@ import butterknife.ButterKnife;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.sofps.inspirationalquotes.AlarmReceiver;
+import com.sofps.inspirationalquotes.Injection;
 import com.sofps.inspirationalquotes.R;
 import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader;
 import com.sofps.inspirationalquotes.util.LanguagePreferences;
@@ -73,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements
 					.add(R.id.container, mQuotesSlideFragment)
 					.commit();
 		}
+
+		// TODO not sure if we need a reference to the presenter here
+		new QuotesSlidePresenter(mQuotesSlideFragment, Injection.provideQuotesRepository(Injection.provideDataBaseHelper(getApplicationContext())), mLanguagePreferences);
 	}
 
 	@Override
@@ -288,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements
 	@Override
 	public void onLanguageChange() {
 		if (mQuotesSlideFragment != null) {
-			mQuotesSlideFragment.loadQuotesForCurrentLanguage();
+			mQuotesSlideFragment.onLanguageChange();
 		}
 	}
 }

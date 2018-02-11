@@ -1,6 +1,5 @@
 package com.sofps.inspirationalquotes.asynctask;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
 import com.sofps.inspirationalquotes.data.Quote;
@@ -18,8 +17,8 @@ public class QuotesLoader extends AsyncTask<String, Void, List<Quote>> {
     private final DataBaseHelper mDataBaseHelper;
     private final QuotesLoaderTaskListener mTaskListener;
 
-    public QuotesLoader(Context context, QuotesLoaderTaskListener listener) {
-        mDataBaseHelper = new DataBaseHelper(context);
+    public QuotesLoader(DataBaseHelper dataBaseHelper, QuotesLoaderTaskListener listener) {
+        mDataBaseHelper = dataBaseHelper;
         mTaskListener = listener;
     }
 
