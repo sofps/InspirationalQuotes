@@ -115,6 +115,107 @@ public class QuotesSlideActivity extends AppCompatActivity
 		StrictMode.setVmPolicy(builder.build());
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		getMenuInflater().inflate(R.menu.menu_quotes_slide, menu);
+		return true;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		deletePrivateFiles();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putIntegerArrayList(BACKGROUNDS, mBackgrounds);
+		outState.putStringArrayList(FONTS, mFonts);
+		outState.putSerializable(QUOTES, mQuotes);
+		if (mAlarmSet) {
+			// Save alarm status only when it's set
+			outState.putBoolean(ALARM_SET, mAlarmSet);
+		}
+		outState.putString(LANGUAGE, mCurrentLanguage);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_share:
+				loadScreenshot();
+				return true;
+			case R.id.action_settings:
+				showSettingsDialog();
+				return true;
+			case R.id.action_shuffle:
+				mPagerAdapter.shuffle();
+				return true;
+
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
+		mQuotes.clear();
+		mQuotes.addAll(quoteList);
+
+		if (mPagerAdapter == null) {
+			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), mBackgrounds, mFonts);
+			mViewPager.setAdapter(mPagerAdapter);
+			mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+			mPagerAdapter.setQuotes(mQuotes);
+		} else {
+			mPagerAdapter.setQuotes(mQuotes);
+		}
+
+		setProgressBarIndeterminateVisibility(false);
+	}
+
+	@Override
+	public void onQuotesLoaderTaskInProgress() {
+		setProgressBarIndeterminateVisibility(true);
+	}
+
+	@Override
+	public void onScreenshotLoaderTaskComplete(File file) {
+		if (file == null) {
+			// TODO show error
+			return;
+		}
+
+		shareScreenshot(file);
+
+		mProgressBar.setVisibility(View.INVISIBLE);
+	}
+
+	@Override
+	public void onScreenshotLoaderTaskInProgress() {
+		mProgressBar.setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+		boolean newValue = sharedPreferences.getBoolean(PREF_NOTIFICATION_ENABLED, true);
+		if (newValue && !mAlarmSet) {
+			// Notifications were enabled and alarm is not set
+			setAlarm();
+		} else if (!newValue && mAlarmSet) {
+			// Notifications were disabled and alarm is set
+			cancelAlarm();
+		}
+
+		String language = sharedPreferences.getString(PREF_LANGUAGE, null);
+		if (!mCurrentLanguage.equals(language)) {
+			mCurrentLanguage = language;
+			loadQuotesForCurrentLanguage();
+		}
+	}
+
 	private void loadToolbar() {
 		setSupportActionBar(mToolbar);
 		// Hide app name and show logo instead
@@ -200,50 +301,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		new QuotesLoader(this, this).execute(mCurrentLanguage);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_quotes_slide, menu);
-        return true;
-    }
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		deletePrivateFiles();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putIntegerArrayList(BACKGROUNDS, mBackgrounds);
-		outState.putStringArrayList(FONTS, mFonts);
-		outState.putSerializable(QUOTES, mQuotes);
-		if (mAlarmSet) {
-			// Save alarm status only when it's set
-			outState.putBoolean(ALARM_SET, mAlarmSet);
-		}
-		outState.putString(LANGUAGE, mCurrentLanguage);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.action_share:
-				loadScreenshot();
-				return true;
-			case R.id.action_settings:
-				showSettingsDialog();
-				return true;
-			case R.id.action_shuffle:
-				mPagerAdapter.shuffle();
-				return true;
-
-			default:
-				return super.onOptionsItemSelected(item);
-		}
-	}
-
 	private void loadScreenshot() {
 		Bitmap screenshot = ScreenshotUtils.getScreenshot(mViewPager);
 		if (screenshot == null) {
@@ -307,45 +364,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		}).show();
 	}
 
-	@Override
-	public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
-		mQuotes.clear();
-		mQuotes.addAll(quoteList);
-
-		if (mPagerAdapter == null) {
-			mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), mBackgrounds, mFonts);
-			mViewPager.setAdapter(mPagerAdapter);
-			mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
-			mPagerAdapter.setQuotes(mQuotes);
-		} else {
-			mPagerAdapter.setQuotes(mQuotes);
-		}
-
-		setProgressBarIndeterminateVisibility(false);
-	}
-
-	@Override
-	public void onQuotesLoaderTaskInProgress() {
-		setProgressBarIndeterminateVisibility(true);
-	}
-
-	@Override
-	public void onScreenshotLoaderTaskComplete(File file) {
-		if (file == null) {
-			// TODO show error
-			return;
-		}
-
-		shareScreenshot(file);
-
-		mProgressBar.setVisibility(View.INVISIBLE);
-	}
-
-	@Override
-	public void onScreenshotLoaderTaskInProgress() {
-		mProgressBar.setVisibility(View.VISIBLE);
-	}
-
 	private void shareScreenshot(File file) {
 		Uri uri = Uri.fromFile(file); // Convert file path into Uri for sharing
 		Intent intent = new Intent();
@@ -355,63 +373,6 @@ public class QuotesSlideActivity extends AppCompatActivity
 		intent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.quote_share_text));
 		intent.putExtra(Intent.EXTRA_STREAM, uri);
 		startActivity(Intent.createChooser(intent, getString(R.string.app_name)));
-	}
-
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-		boolean newValue = sharedPreferences.getBoolean(PREF_NOTIFICATION_ENABLED, true);
-		if (newValue && !mAlarmSet) {
-			// Notifications were enabled and alarm is not set
-			setAlarm();
-		} else if (!newValue && mAlarmSet) {
-			// Notifications were disabled and alarm is set
-			cancelAlarm();
-		}
-
-		String language = sharedPreferences.getString(PREF_LANGUAGE, null);
-		if (!mCurrentLanguage.equals(language)) {
-			mCurrentLanguage = language;
-			loadQuotesForCurrentLanguage();
-		}
-	}
-
-	private class ZoomOutPageTransformer implements ViewPager.PageTransformer {
-		private static final float MIN_SCALE = 0.85f;
-		private static final float MIN_ALPHA = 0.5f;
-
-		public void transformPage(View view, float position) {
-			int pageWidth = view.getWidth();
-			int pageHeight = view.getHeight();
-
-			if (position < -1) { // [-Infinity,-1)
-				// This page is way off-screen to the left.
-				view.setAlpha(0);
-
-			} else if (position <= 1) { // [-1,1]
-				// Modify the default slide transition to shrink the page as
-				// well
-				float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
-				float verticalMargin = pageHeight * (1 - scaleFactor) / 2;
-				float horizontalMargin = pageWidth * (1 - scaleFactor) / 2;
-				if (position < 0) {
-					view.setTranslationX(horizontalMargin - verticalMargin / 2);
-				} else {
-					view.setTranslationX(-horizontalMargin + verticalMargin / 2);
-				}
-
-				// Scale the page down (between MIN_SCALE and 1)
-				view.setScaleX(scaleFactor);
-				view.setScaleY(scaleFactor);
-
-				// Fade the page relative to its size.
-				view.setAlpha(MIN_ALPHA + (scaleFactor - MIN_SCALE)
-						/ (1 - MIN_SCALE) * (1 - MIN_ALPHA));
-
-			} else { // (1,+Infinity]
-				// This page is way off-screen to the right.
-				view.setAlpha(0);
-			}
-		}
 	}
 
 	private void setAlarm() {
@@ -451,6 +412,45 @@ public class QuotesSlideActivity extends AppCompatActivity
 				} else {
 					Log.d(TAG, "Couldn't delete file: " + file.getName());
 				}
+			}
+		}
+	}
+
+	private static class ZoomOutPageTransformer implements ViewPager.PageTransformer {
+		private static final float MIN_SCALE = 0.85f;
+		private static final float MIN_ALPHA = 0.5f;
+
+		public void transformPage(View view, float position) {
+			int pageWidth = view.getWidth();
+			int pageHeight = view.getHeight();
+
+			if (position < -1) { // [-Infinity,-1)
+				// This page is way off-screen to the left.
+				view.setAlpha(0);
+
+			} else if (position <= 1) { // [-1,1]
+				// Modify the default slide transition to shrink the page as
+				// well
+				float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
+				float verticalMargin = pageHeight * (1 - scaleFactor) / 2;
+				float horizontalMargin = pageWidth * (1 - scaleFactor) / 2;
+				if (position < 0) {
+					view.setTranslationX(horizontalMargin - verticalMargin / 2);
+				} else {
+					view.setTranslationX(-horizontalMargin + verticalMargin / 2);
+				}
+
+				// Scale the page down (between MIN_SCALE and 1)
+				view.setScaleX(scaleFactor);
+				view.setScaleY(scaleFactor);
+
+				// Fade the page relative to its size.
+				view.setAlpha(MIN_ALPHA + (scaleFactor - MIN_SCALE)
+						/ (1 - MIN_SCALE) * (1 - MIN_ALPHA));
+
+			} else { // (1,+Infinity]
+				// This page is way off-screen to the right.
+				view.setAlpha(0);
 			}
 		}
 	}

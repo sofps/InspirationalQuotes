@@ -48,6 +48,7 @@ public class QuotesLoader extends AsyncTask<String, Void, List<Quote>> {
             quotes.add(cursor.getQuote());
         }
         cursor.close();
+        mDataBaseHelper.close();
         return quotes;
     }
 }
