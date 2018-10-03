@@ -1,16 +1,20 @@
 package com.sofps.inspirationalquotes.data.source;
 
 import android.support.annotation.NonNull;
+
 import com.sofps.inspirationalquotes.data.Quote;
+
+import java.util.List;
 
 public interface QuotesDataSource {
 
     interface GetQuoteCallback {
 
-        void onQuoteLoaded(Quote quote);
+        void onQuotesLoaded(List<Quote> quotes);
 
         void onDataNotAvailable();
     }
 
-    void getQuote(@NonNull String language, @NonNull GetQuoteCallback callback);
+    void getQuotes(@NonNull String language, @NonNull GetQuoteCallback callback);
+
 }
