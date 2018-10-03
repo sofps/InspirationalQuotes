@@ -2,9 +2,10 @@ package com.sofps.inspirationalquotes.ui;
 
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +13,11 @@ import android.view.ViewGroup;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+
+import com.airbnb.lottie.LottieAnimationView;
 import com.sofps.inspirationalquotes.R;
-import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.data.Quote;
-import com.sofps.inspirationalquotes.util.LanguagePreferences;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,10 +25,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class QuotesSlideFragment extends android.support.v4.app.Fragment
+public class QuotesSlideFragment extends Fragment
         implements QuotesSlideContract.View {
 
     @BindView(R.id.pager) ViewPager mViewPager;
+    @BindView(R.id.loader) LottieAnimationView loader;
 
     private static final String TAG = "MainActivity";
 
@@ -163,7 +166,7 @@ public class QuotesSlideFragment extends android.support.v4.app.Fragment
 
     @Override
     public void showProgress(boolean show) {
-        // TODO setProgressBarIndeterminateVisibility(show);
+        loader.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     public void onLanguageChange() {

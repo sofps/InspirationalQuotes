@@ -1,7 +1,7 @@
 package com.sofps.inspirationalquotes;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
 import com.sofps.inspirationalquotes.data.QuotesService;
 import com.sofps.inspirationalquotes.data.source.QuotesRepository;
