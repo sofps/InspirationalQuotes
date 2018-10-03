@@ -16,8 +16,8 @@ public class QuotesLocalDataSource implements QuotesDataSource {
     }
 
     @Override
-    public void getQuote(@NonNull String language, @NonNull GetQuoteCallback callback) {
-        callback.onQuoteLoaded(getQuotes(language).get(0)); // TODO
+    public void getQuotes(@NonNull String language, @NonNull GetQuoteCallback callback) {
+        callback.onQuotesLoaded(getQuotes(language));
     }
 
     public void persist(Quote quote) {

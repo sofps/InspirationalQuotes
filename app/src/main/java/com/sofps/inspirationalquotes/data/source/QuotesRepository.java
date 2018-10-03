@@ -21,25 +21,18 @@ public class QuotesRepository {
     }
 
     public void loadQuotesForLanguage(final String language, final QuotesLoader.QuotesLoaderTaskListener listener) {
-        mQuotesRemoteDataSource.getQuote(language, new QuotesDataSource.GetQuoteCallback() {
+        mQuotesRemoteDataSource.getQuotes(language, new QuotesDataSource.GetQuoteCallback() {
             @Override
-            public void onQuoteLoaded(Quote quote) {
-                mQuotesLocalDataSource.persist(quote);
-
-                // TODO this list is temporary
-                List<Quote> quotes = new ArrayList<>(1);
-                quotes.add(quote);
+            public void onQuotesLoaded(List<Quote> quotes) {
+                mQuotesLocalDataSource.persist(quotes.get(0)); // TODO for now the remote DS only returns a list with one new element that needs to be persisted
                 listener.onQuotesLoaderTaskComplete(quotes);
             }
 
             @Override
             public void onDataNotAvailable() {
-                mQuotesLocalDataSource.getQuote(language, new QuotesDataSource.GetQuoteCallback() {
+                mQuotesLocalDataSource.getQuotes(language, new QuotesDataSource.GetQuoteCallback() {
                     @Override
-                    public void onQuoteLoaded(Quote quote) {
-                        // TODO this list is temporary
-                        List<Quote> quotes = new ArrayList<>(1);
-                        quotes.add(quote);
+                    public void onQuotesLoaded(List<Quote> quotes) {
                         listener.onQuotesLoaderTaskComplete(quotes);
                     }
 
