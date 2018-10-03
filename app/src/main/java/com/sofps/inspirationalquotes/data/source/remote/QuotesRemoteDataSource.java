@@ -25,7 +25,11 @@ public class QuotesRemoteDataSource implements QuotesDataSource {
             mQuotesService.getQuoteOfTheDay().enqueue(new Callback<QuoteApi>() {
                 @Override
                 public void onResponse(Call<QuoteApi> call, Response<QuoteApi> response) {
-                    callback.onQuoteLoaded(mapQuote(response.body()));
+                    if (response.isSuccessful() && response.body() != null) {
+                        callback.onQuoteLoaded(mapQuote(response.body()));
+                    } else {
+                        callback.onDataNotAvailable();
+                    }
                 }
 
                 @Override
@@ -38,7 +42,7 @@ public class QuotesRemoteDataSource implements QuotesDataSource {
         }
     }
 
-    private Quote mapQuote(QuoteApi quoteApi) {
+    private Quote mapQuote(@NonNull QuoteApi quoteApi) {
         Quote quote = new Quote();
         quote.setLanguage(LANGUAGE_SUPPORTED);
         quote.setAuthor(quoteApi.getAuthor());
