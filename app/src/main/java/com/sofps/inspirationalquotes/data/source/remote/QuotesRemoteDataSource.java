@@ -1,6 +1,6 @@
 package com.sofps.inspirationalquotes.data.source.remote;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.data.QuoteApi;
@@ -30,8 +30,9 @@ public class QuotesRemoteDataSource implements QuotesDataSource {
             mQuotesService.getQuoteOfTheDay().enqueue(new Callback<QuoteApi>() {
                 @Override
                 public void onResponse(Call<QuoteApi> call, Response<QuoteApi> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        Quote quote = mapQuote(response.body());
+                    QuoteApi quoteApi = response.body();
+                    if (response.isSuccessful() && quoteApi != null && quoteApi.isValid()) {
+                        Quote quote = mapQuote(quoteApi);
                         List<Quote> quotes = new ArrayList<>(1);
                         quotes.add(quote);
                         callback.onQuotesLoaded(quotes);

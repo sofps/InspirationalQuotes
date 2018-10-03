@@ -16,7 +16,7 @@ public class QuotesSlidePresenter
 
     private ArrayList<Quote> mQuotes = new ArrayList<>();
 
-    public QuotesSlidePresenter(QuotesSlideContract.View view, QuotesRepository quotesRepository, LanguagePreferences languagePreferences) {
+    QuotesSlidePresenter(QuotesSlideContract.View view, QuotesRepository quotesRepository, LanguagePreferences languagePreferences) {
         mView = view;
         mQuotesRepository = quotesRepository;
         mLanguagePreferences = languagePreferences;
@@ -30,6 +30,7 @@ public class QuotesSlidePresenter
     }
 
     private void loadQuotesForCurrentLanguage() {
+        mView.showProgress(true);
         mQuotesRepository.loadQuotesForLanguage(mLanguagePreferences.getLanguage(), this);
     }
 
@@ -45,7 +46,7 @@ public class QuotesSlidePresenter
 
     @Override
     public void onQuotesLoaderTaskInProgress() {
-        mView.showProgress(false);
+        mView.showProgress(true);
     }
 
     @Override

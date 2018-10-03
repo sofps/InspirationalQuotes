@@ -7,23 +7,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
-import butterknife.BindView;
-import butterknife.ButterKnife;
+
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.airbnb.lottie.LottieAnimationView;
 import com.sofps.inspirationalquotes.AlarmReceiver;
 import com.sofps.inspirationalquotes.Injection;
 import com.sofps.inspirationalquotes.R;
@@ -34,9 +30,16 @@ import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource;
 import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource;
 import com.sofps.inspirationalquotes.util.LanguagePreferences;
 import com.sofps.inspirationalquotes.util.ScreenshotUtils;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity implements
 		ScreenshotLoader.ScreenshotLoaderTaskListener,
@@ -44,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements
 		LanguagePreferences.LanguagePreferencesListener {
 
 	@BindView(R.id.toolbar) Toolbar mToolbar;
-	@BindView(R.id.progress_spinner) ProgressBar mProgressBar;
+	@BindView(R.id.loader) LottieAnimationView loader;
 	@BindView(R.id.container) FrameLayout mContainer;
 
 	public static final String PREF_NOTIFICATION_ENABLED = "notificationEnabled";
@@ -140,12 +143,12 @@ public class MainActivity extends AppCompatActivity implements
 
 		shareScreenshot(file);
 
-		mProgressBar.setVisibility(View.INVISIBLE);
+		loader.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void onScreenshotLoaderTaskInProgress() {
-		mProgressBar.setVisibility(View.VISIBLE);
+		loader.setVisibility(View.VISIBLE);
 	}
 
 	@Override

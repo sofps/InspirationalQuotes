@@ -1,11 +1,11 @@
 package com.sofps.inspirationalquotes.data.source;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource;
 import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class QuotesRepository {

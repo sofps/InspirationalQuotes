@@ -57,6 +57,10 @@ public class QuoteApi {
         return mTitle;
     }
 
+    public boolean isValid() {
+        return mAuthor != null && !mAuthor.isEmpty() && mQuote != null && !mQuote.isEmpty();
+    }
+
     public static class Builder {
 
         private String mAuthor;

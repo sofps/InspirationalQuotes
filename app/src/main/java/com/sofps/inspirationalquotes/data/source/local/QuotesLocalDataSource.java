@@ -1,6 +1,6 @@
 package com.sofps.inspirationalquotes.data.source.local;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.sofps.inspirationalquotes.data.DataBaseHelper;
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.data.source.QuotesDataSource;
