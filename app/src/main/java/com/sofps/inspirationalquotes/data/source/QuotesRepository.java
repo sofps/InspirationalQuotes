@@ -1,10 +1,13 @@
 package com.sofps.inspirationalquotes.data.source;
 
 import androidx.annotation.NonNull;
+
 import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource;
 import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -23,7 +26,7 @@ public class QuotesRepository {
     public void loadQuotesForLanguage(final String language, final QuotesLoader.QuotesLoaderTaskListener listener) {
         mQuotesRemoteDataSource.getQuotes(language, new QuotesDataSource.GetQuoteCallback() {
             @Override
-            public void onQuotesLoaded(List<Quote> quotes) {
+            public void onQuotesLoaded(@NotNull List<? extends Quote> quotes) {
                 mQuotesLocalDataSource.persist(quotes.get(0)); // TODO for now the remote DS only returns a list with one new element that needs to be persisted
                 listener.onQuotesLoaderTaskComplete(quotes);
             }
@@ -32,7 +35,7 @@ public class QuotesRepository {
             public void onDataNotAvailable() {
                 mQuotesLocalDataSource.getQuotes(language, new QuotesDataSource.GetQuoteCallback() {
                     @Override
-                    public void onQuotesLoaded(List<Quote> quotes) {
+                    public void onQuotesLoaded(@NotNull List<? extends Quote> quotes) {
                         listener.onQuotesLoaderTaskComplete(quotes);
                     }
 
