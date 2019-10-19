@@ -21,10 +21,6 @@ class QuotesSlidePresenter internal constructor(
             internalQuotes.addAll(quotes)
         }
 
-    init {
-        view.setPresenter(this)
-    }
-
     override fun start() {
         loadQuotesForCurrentLanguage()
     }

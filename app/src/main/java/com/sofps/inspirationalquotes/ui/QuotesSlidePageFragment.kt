@@ -2,11 +2,11 @@ package com.sofps.inspirationalquotes.ui
 
 import android.graphics.Typeface
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.sofps.inspirationalquotes.R
 import kotlinx.android.synthetic.main.fragment_quotes_slide_page.*
 
@@ -85,9 +85,5 @@ class QuotesSlidePageFragment : Fragment(), QuotesSlidePageContract.View {
             quote_text_view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
             author_text_view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, size)
         }
-    }
-
-    override fun setPresenter(presenter: QuotesSlidePageContract.Presenter) {
-
     }
 }
