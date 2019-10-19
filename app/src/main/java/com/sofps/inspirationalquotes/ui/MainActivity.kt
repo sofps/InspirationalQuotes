@@ -147,7 +147,7 @@ class MainActivity :
             registerOnSharedPreferenceChangeListener(this@MainActivity)
         }
 
-        languagePreferences = LanguagePreferences(preferences).apply {
+        languagePreferences = LanguagePreferences(preferences!!).apply {
             setLanguagePreferencesListener(this@MainActivity)
         }
     }
