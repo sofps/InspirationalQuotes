@@ -17,7 +17,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.afollestad.materialdialogs.MaterialDialog
 import com.sofps.inspirationalquotes.AlarmReceiver
-import com.sofps.inspirationalquotes.Injection
 import com.sofps.inspirationalquotes.R
 import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader
 import com.sofps.inspirationalquotes.util.LanguagePreferences
@@ -63,15 +62,6 @@ class MainActivity :
                     .add(R.id.container, quotesSlideFragment!!)
                     .commit()
         }
-
-        // TODO not sure if we need a reference to the presenter here
-        val dataBaseHelper = Injection.provideDataBaseHelper(applicationContext)
-        val quotesLocalDataSource = Injection.provideQuotesLocalDataSource(dataBaseHelper)
-        val quotesService = Injection.provideQuotesService()
-        val quotesRemoteDataSource = Injection.provideQuotesRemoteDataSource(quotesService)
-        QuotesSlidePresenter(quotesSlideFragment!!,
-                Injection.provideQuotesRepository(quotesLocalDataSource, quotesRemoteDataSource),
-                languagePreferences!!)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
