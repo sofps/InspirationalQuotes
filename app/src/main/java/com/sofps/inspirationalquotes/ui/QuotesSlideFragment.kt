@@ -153,7 +153,7 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
 
     override fun initialize() {
         if (pagerAdapter == null) { // TODO is this check necessary?
-            pagerAdapter = ScreenSlidePagerAdapter(activity!!.supportFragmentManager, backgrounds, fonts, presenter)
+            pagerAdapter = ScreenSlidePagerAdapter(activity!!.supportFragmentManager, backgrounds!!, fonts!!, presenter!!)
             pager?.apply {
                 adapter = pagerAdapter
                 setPageTransformer(true, ZoomOutPageTransformer())
