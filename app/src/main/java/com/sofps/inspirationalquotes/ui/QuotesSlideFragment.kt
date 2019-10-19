@@ -11,6 +11,8 @@ import androidx.viewpager.widget.ViewPager
 import com.sofps.inspirationalquotes.R
 import com.sofps.inspirationalquotes.data.Quote
 import kotlinx.android.synthetic.main.fragment_quotes_slide.*
+import org.koin.android.ext.android.inject
+import org.koin.core.parameter.parametersOf
 import java.io.IOException
 import java.io.Serializable
 import java.util.*
@@ -27,6 +29,8 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
         private const val QUOTES = "quotes"
         private const val BACKGROUNDS = "backgrounds"
     }
+
+    private val presenter: QuotesSlideContract.Presenter by inject { parametersOf(this) }
 
     private val availableBackgrounds = intArrayOf(
             R.drawable.background1,
@@ -70,8 +74,6 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
 
     private var pagerAdapter: ScreenSlidePagerAdapter? = null
 
-    private var presenter: QuotesSlideContract.Presenter? = null
-
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_quotes_slide, container, false)
@@ -89,7 +91,7 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
         val builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
 
-        presenter?.start()
+        presenter.start()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -108,10 +110,6 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
         if (savedInstanceState != null) {
             presenter?.quotes = savedInstanceState.getSerializable(QUOTES) as List<Quote>
         }
-    }
-
-    override fun setPresenter(presenter: QuotesSlideContract.Presenter) {
-        this.presenter = presenter
     }
 
     private fun loadFonts(savedInstanceState: Bundle?) {
