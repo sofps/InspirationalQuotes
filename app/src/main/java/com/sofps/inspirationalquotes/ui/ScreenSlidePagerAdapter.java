@@ -47,7 +47,7 @@ public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
         mQuoteListener.onQuoteShow(quote);
 
-        return QuotesSlidePageFragment.create(position, background, font, quote.getText(), quote.getAuthor());
+        return QuotesSlidePageFragment.Companion.create(position, background, font, quote.getText(), quote.getAuthor());
     }
 
     @Override
