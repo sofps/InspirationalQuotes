@@ -69,9 +69,9 @@ class MainActivity :
         val quotesLocalDataSource = Injection.provideQuotesLocalDataSource(dataBaseHelper)
         val quotesService = Injection.provideQuotesService()
         val quotesRemoteDataSource = Injection.provideQuotesRemoteDataSource(quotesService)
-        QuotesSlidePresenter(quotesSlideFragment,
+        QuotesSlidePresenter(quotesSlideFragment!!,
                 Injection.provideQuotesRepository(quotesLocalDataSource, quotesRemoteDataSource),
-                languagePreferences)
+                languagePreferences!!)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
