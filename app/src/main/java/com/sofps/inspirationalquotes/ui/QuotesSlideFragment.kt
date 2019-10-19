@@ -168,7 +168,7 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
     }
 
     fun onLanguageChange() {
-        presenter?.onLanguageChange()
+        presenter.onLanguageChange()
     }
 
     private class ZoomOutPageTransformer : ViewPager.PageTransformer {
