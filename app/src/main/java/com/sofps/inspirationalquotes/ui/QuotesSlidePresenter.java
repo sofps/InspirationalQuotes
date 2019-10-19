@@ -38,7 +38,7 @@ public class QuotesSlidePresenter
     }
 
     @Override
-    public void onQuotesLoaderTaskComplete(@NotNull List<? extends Quote> quoteList) {
+    public void onQuotesLoaderTaskComplete(@NotNull List<Quote> quoteList) {
         mQuotes.clear();
         mQuotes.addAll(quoteList);
 
