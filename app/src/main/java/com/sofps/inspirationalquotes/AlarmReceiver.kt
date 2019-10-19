@@ -20,6 +20,8 @@ class AlarmReceiver : WakefulBroadcastReceiver() {
 
     companion object {
         private const val TAG = "AlarmReceiver"
+
+        fun completeWakefulIntent(intent: Intent) = WakefulBroadcastReceiver.completeWakefulIntent(intent)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
