@@ -25,7 +25,9 @@ class QuotesLocalDataSource(
         val cursor = dataBaseHelper.queryQuotes(language)
         val quotes = ArrayList<Quote>()
         while (cursor.moveToNext()) {
-            quotes.add(cursor.quote)
+            cursor.quote?.let {
+                quotes.add(it)
+            }
         }
         cursor.close()
         dataBaseHelper.close()
