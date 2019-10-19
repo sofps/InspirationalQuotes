@@ -4,6 +4,9 @@ import com.sofps.inspirationalquotes.asynctask.QuotesLoader;
 import com.sofps.inspirationalquotes.data.Quote;
 import com.sofps.inspirationalquotes.data.source.QuotesRepository;
 import com.sofps.inspirationalquotes.util.LanguagePreferences;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +38,7 @@ public class QuotesSlidePresenter
     }
 
     @Override
-    public void onQuotesLoaderTaskComplete(List<Quote> quoteList) {
+    public void onQuotesLoaderTaskComplete(@NotNull List<? extends Quote> quoteList) {
         mQuotes.clear();
         mQuotes.addAll(quoteList);
 
