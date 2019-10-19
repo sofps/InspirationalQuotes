@@ -1,7 +1,7 @@
 package com.sofps.inspirationalquotes.util
 
 import android.content.SharedPreferences
-import java.util.Locale
+import java.util.*
 
 class LanguagePreferences(
         private val sharedPreferences: SharedPreferences
@@ -19,15 +19,7 @@ class LanguagePreferences(
     // The language preference is not set, set it
     var language: String
         get() {
-            var languageAux = sharedPreferences.getString(PREF_LANGUAGE, null)
-            if (languageAux == null) {
-                languageAux = Locale.getDefault().language.toUpperCase()
-                if (!SUPPORTED_LANGUAGES.contains(languageAux)) {
-                    languageAux = DEFAULT_LANGUAGE
-                }
-                language = languageAux
-            }
-            return languageAux
+            return sharedPreferences.getString(PREF_LANGUAGE, null) ?: getSupportedLanguage()
         }
         set(language) = sharedPreferences.edit().putString(PREF_LANGUAGE, language).apply()
 
@@ -52,4 +44,14 @@ class LanguagePreferences(
     fun unregisterListeners() {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
     }
+
+    private fun getSupportedLanguage(): String {
+        val language = Locale.getDefault().language.toUpperCase()
+        if (!SUPPORTED_LANGUAGES.contains(language)) {
+            return DEFAULT_LANGUAGE
+        }
+        return language
+    }
+
+
 }

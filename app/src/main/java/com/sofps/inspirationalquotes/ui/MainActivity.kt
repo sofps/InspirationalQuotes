@@ -22,6 +22,7 @@ import com.sofps.inspirationalquotes.asynctask.ScreenshotLoader
 import com.sofps.inspirationalquotes.util.LanguagePreferences
 import com.sofps.inspirationalquotes.util.ScreenshotUtils
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.ext.android.inject
 import java.io.File
 import java.io.FilenameFilter
 
@@ -44,9 +45,10 @@ class MainActivity :
     private var alarmSet: Boolean = false
 
     private var preferences: SharedPreferences? = null
-    private var languagePreferences: LanguagePreferences? = null
 
     private var quotesSlideFragment: QuotesSlideFragment? = null
+
+    private val languagePreferences: LanguagePreferences by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +75,7 @@ class MainActivity :
     override fun onDestroy() {
         super.onDestroy()
         deletePrivateFiles()
-        languagePreferences!!.unregisterListeners()
+        languagePreferences.unregisterListeners()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -137,9 +139,7 @@ class MainActivity :
             registerOnSharedPreferenceChangeListener(this@MainActivity)
         }
 
-        languagePreferences = LanguagePreferences(preferences!!).apply {
-            setLanguagePreferencesListener(this@MainActivity)
-        }
+        languagePreferences.setLanguagePreferencesListener(this@MainActivity)
     }
 
     private fun loadAlarm(savedInstanceState: Bundle?) {
@@ -177,7 +177,7 @@ class MainActivity :
         val enableNotificationsSwitch = view!!.findViewById<Switch>(R.id.enable_notifications)
         enableNotificationsSwitch.isChecked = notificationsEnabled
 
-        val languageSelected = languagePreferences!!.language
+        val languageSelected = languagePreferences.language
         val spinner = view.findViewById<Spinner>(R.id.language_spinner)
         // Create an ArrayAdapter using the string array and a default spinner layout
         val adapter = ArrayAdapter.createFromResource(this, R.array.language_labels, R.layout.spinner_textview)
@@ -204,7 +204,7 @@ class MainActivity :
             // Check if language was changed
             val currentLang = resources.getStringArray(R.array.language_values)[spinner.selectedItemPosition]
             if (currentLang != languageSelected) {
-                languagePreferences!!.language = currentLang
+                languagePreferences.language = currentLang
             }
         }.show()
     }
