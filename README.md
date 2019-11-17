@@ -9,4 +9,3 @@ The idea is to make it work with current tools and updated libraries and use it 
 * Add api https://theysaidso.com/api/ to get quote of the day.
 * Add navigation drawer and move settings there.
 * Add tests.
-* Replace SQLite with Room.

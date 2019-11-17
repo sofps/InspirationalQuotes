@@ -2,7 +2,6 @@ package com.sofps.inspirationalquotes.di
 
 import android.app.Application
 import android.content.SharedPreferences
-import com.sofps.inspirationalquotes.data.DataBaseHelper
 import com.sofps.inspirationalquotes.data.QuotesService
 import com.sofps.inspirationalquotes.data.source.QuotesRepository
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource
@@ -19,9 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
 
-    single { DataBaseHelper(androidContext()) }
-
-    single { QuotesLocalDataSource(get()) }
+    single { QuotesLocalDataSource(androidContext()) }
 
     single { QuotesRemoteDataSource(get()) }
 

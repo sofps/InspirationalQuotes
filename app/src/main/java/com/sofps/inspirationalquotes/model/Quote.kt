@@ -1,22 +1,38 @@
 package com.sofps.inspirationalquotes.model
 
-import java.io.Serializable
+import androidx.room.*
 
-class Quote : Serializable {
+@Entity(tableName = "quote")
+class Quote(
+        @PrimaryKey(autoGenerate = true)
+        @ColumnInfo(name = "_id")
+        var id: Long = 0L,
 
-    companion object {
-        private const val serialVersionUID = 1L
-    }
+        var text: String?,
 
-    var id: Long = 0
-    var text: String? = null
-    var author: String? = null
-    var timesShowed: Int = 0
-    var language: String? = null
+        var author: String?,
 
-    init {
-        id = -1
-        timesShowed = 0
-    }
+        @ColumnInfo(name = "times_showed", defaultValue = "0")
+        var timesShowed: Long = 0L,
 
+        var language: String?
+)
+
+@Dao
+interface QuoteDao {
+
+    @Query("SELECT * FROM quote")
+    suspend fun getAll(): List<Quote>
+
+    @Query("SELECT * FROM quote WHERE language = :language")
+    suspend fun getAllByLanguage(language: String): List<Quote>
+
+    @Insert
+    suspend fun insertAll(quotes: List<Quote>)
+
+    @Update
+    suspend fun update(quote: Quote)
+
+    @Delete
+    suspend fun delete(user: Quote)
 }

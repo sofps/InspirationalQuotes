@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
 
 class QuotesSlidePresenter internal constructor(
         private val view: QuotesSlideContract.View,
@@ -16,7 +15,7 @@ class QuotesSlidePresenter internal constructor(
         private val languagePreferences: LanguagePreferences
 ) : QuotesSlideContract.Presenter {
 
-    private val internalQuotes = ArrayList<Quote>()
+    private val internalQuotes = mutableListOf<Quote>()
 
     override var quotes: List<Quote>
         get() = internalQuotes
@@ -29,8 +28,6 @@ class QuotesSlidePresenter internal constructor(
     }
 
     private fun loadQuotesForCurrentLanguage() {
-
-
         GlobalScope.launch(Dispatchers.Main) {
             quotesRepository.getQuotesForLanguage(languagePreferences.language)
                     .collect { state ->
