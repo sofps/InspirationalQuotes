@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.CursorWrapper
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper
+import com.sofps.inspirationalquotes.model.Quote
 
 /**
  * Constructor Takes and keeps a reference of the passed context in order to

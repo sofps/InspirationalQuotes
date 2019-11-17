@@ -1,17 +1,20 @@
 package com.sofps.inspirationalquotes.ui
 
-import com.sofps.inspirationalquotes.asynctask.QuotesLoader
-import com.sofps.inspirationalquotes.data.Quote
 import com.sofps.inspirationalquotes.data.source.QuotesRepository
+import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.model.ViewState
 import com.sofps.inspirationalquotes.util.LanguagePreferences
-
-import java.util.ArrayList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import java.util.*
 
 class QuotesSlidePresenter internal constructor(
         private val view: QuotesSlideContract.View,
         private val quotesRepository: QuotesRepository,
         private val languagePreferences: LanguagePreferences
-) : QuotesSlideContract.Presenter, QuotesLoader.QuotesLoaderTaskListener {
+) : QuotesSlideContract.Presenter {
 
     private val internalQuotes = ArrayList<Quote>()
 
@@ -26,21 +29,27 @@ class QuotesSlidePresenter internal constructor(
     }
 
     private fun loadQuotesForCurrentLanguage() {
-        view.showProgress(true)
-        quotesRepository.loadQuotesForLanguage(languagePreferences.language, this)
-    }
 
-    override fun onQuotesLoaderTaskComplete(quoteList: List<Quote>) {
-        internalQuotes.clear()
-        internalQuotes.addAll(quoteList)
 
-        view.initialize()
-        view.setQuotes(internalQuotes)
-        view.showProgress(false)
-    }
+        GlobalScope.launch(Dispatchers.Main) {
+            quotesRepository.getQuotesForLanguage(languagePreferences.language)
+                    .collect { state ->
+                        when (state) {
+                            is ViewState.Success -> {
+                                internalQuotes.clear()
+                                internalQuotes.addAll(state.data)
 
-    override fun onQuotesLoaderTaskInProgress() {
-        view.showProgress(true)
+                                view.initialize()
+                                view.setQuotes(internalQuotes)
+                                view.showProgress(false)
+                            }
+                            is ViewState.Loading -> view.showProgress(true)
+                            is ViewState.Error -> {
+                                // TODO show error toast("Something went wrong ¯\\_(ツ)_/¯ => ${state.message}")
+                            }
+                        }
+                    }
+        }
     }
 
     override fun onLanguageChange() {
