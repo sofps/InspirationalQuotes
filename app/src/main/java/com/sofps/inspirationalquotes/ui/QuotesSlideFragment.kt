@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import com.sofps.inspirationalquotes.R
-import com.sofps.inspirationalquotes.data.Quote
+import com.sofps.inspirationalquotes.model.Quote
 import kotlinx.android.synthetic.main.fragment_quotes_slide.*
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf

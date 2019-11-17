@@ -1,35 +1,31 @@
 package com.sofps.inspirationalquotes.data.source
 
-import com.sofps.inspirationalquotes.asynctask.QuotesLoader
-import com.sofps.inspirationalquotes.data.Quote
+import com.sofps.inspirationalquotes.model.Quote
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource
 import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource
+import com.sofps.inspirationalquotes.model.ViewState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 
 class QuotesRepository(
         private val quotesLocalDataSource: QuotesLocalDataSource,
         private val quotesRemoteDataSource: QuotesRemoteDataSource
 ) {
 
-    fun loadQuotesForLanguage(language: String, listener: QuotesLoader.QuotesLoaderTaskListener) {
-        quotesRemoteDataSource.getQuotes(language, object : QuotesDataSource.GetQuoteCallback {
-
-            override fun onQuotesLoaded(quotes: List<Quote>) {
-                quotesLocalDataSource.persist(quotes[0]) // TODO for now the remote DS only returns a list with one new element that needs to be persisted
-                listener.onQuotesLoaderTaskComplete(quotes)
-            }
-
-            override fun onDataNotAvailable() {
-                quotesLocalDataSource.getQuotes(language, object : QuotesDataSource.GetQuoteCallback {
-                    override fun onQuotesLoaded(quotes: List<Quote>) {
-                        listener.onQuotesLoaderTaskComplete(quotes)
+    suspend fun getQuotesForLanguage(language: String): Flow<ViewState<List<Quote>>> {
+        return flow {
+            emit(ViewState.loading())
+            quotesRemoteDataSource.getQuotes(language)
+                    .collect { quotes ->
+                        quotesLocalDataSource.persist(quotes)
                     }
-
-                    override fun onDataNotAvailable() {
-                        // TODO error
+            quotesLocalDataSource.getQuotes(language)
+                    .collect {
+                        emit(ViewState.success(it))
                     }
-                })
-            }
-        })
+        }.catch {
+            emit(ViewState.error(it.message.orEmpty()))
+        }.flowOn(Dispatchers.IO)
     }
 
     fun addOneTimeShowed(quote: Quote) {

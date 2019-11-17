@@ -2,7 +2,7 @@ package com.sofps.inspirationalquotes.ui
 
 import com.sofps.inspirationalquotes.BasePresenter
 import com.sofps.inspirationalquotes.BaseView
-import com.sofps.inspirationalquotes.data.Quote
+import com.sofps.inspirationalquotes.model.Quote
 
 /**
  * This specifies the contract between the view and the presenter.

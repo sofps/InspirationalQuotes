@@ -3,7 +3,7 @@ package com.sofps.inspirationalquotes.ui
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import com.sofps.inspirationalquotes.data.Quote
+import com.sofps.inspirationalquotes.model.Quote
 
 class ScreenSlidePagerAdapter(
         fm: FragmentManager,

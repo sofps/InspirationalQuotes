@@ -1,17 +1,16 @@
 package com.sofps.inspirationalquotes.data
 
-import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface QuotesService {
 
-    @get:GET("qod.json")
-    val quoteOfTheDay: Call<QuoteApi>
+    @GET("qod.json")
+    suspend fun getQuoteOfTheDay(): QuoteApi
 
-    @get:GET("quote/random.json")
-    val randomQuote: Call<QuoteApi>
+    @GET("quote/random.json")
+    suspend fun getRandomQuote(): QuoteApi
 
     @GET("qod.json")
-    fun getQuoteOfTheDayForCategory(@Query("category") category: String): Call<QuoteApi>
+    suspend fun getQuoteOfTheDayForCategory(@Query("category") category: String): QuoteApi
 }

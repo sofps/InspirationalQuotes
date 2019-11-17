@@ -1,4 +1,4 @@
-package com.sofps.inspirationalquotes.data
+package com.sofps.inspirationalquotes.model
 
 import java.io.Serializable
 
