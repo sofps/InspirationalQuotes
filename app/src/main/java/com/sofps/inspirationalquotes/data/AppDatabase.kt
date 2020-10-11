@@ -4,38 +4,27 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.sofps.inspirationalquotes.model.Quote
-import com.sofps.inspirationalquotes.model.QuoteDao
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-@Database(entities = [Quote::class], version = 1)
+@Database(
+        entities = [
+            QuoteDb::class
+        ],
+        version = 1,
+        exportSchema = true
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun quoteDao(): QuoteDao
-}
 
-private lateinit var INSTANCE: AppDatabase
+    companion object {
 
-/**
- * Instantiate a database from a context.
- */
-fun getDatabase(context: Context): AppDatabase {
+        private const val databaseName = "inspirational_quotes.db"
+        private const val prepackagedDatabase = "database/${databaseName}"
 
-    synchronized(AppDatabase::class) {
-        if (!::INSTANCE.isInitialized) {
-            INSTANCE = Room
-                    .databaseBuilder(
-                            context.applicationContext,
-                            AppDatabase::class.java,
-                            "inspirational_quotes"
-                    )
-                    .createFromAsset("databases/inspirational_quotes.db")
-                    .fallbackToDestructiveMigration()
-                    .build()
-        }
+        fun buildDefault(context: Context) =
+                Room.databaseBuilder(context, AppDatabase::class.java, databaseName)
+                        .createFromAsset(prepackagedDatabase)
+                        .fallbackToDestructiveMigration()
+                        .build()
     }
-    return INSTANCE
 }

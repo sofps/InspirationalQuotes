@@ -3,7 +3,7 @@ package com.sofps.inspirationalquotes.ui
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.model.QuoteModel
 
 class ScreenSlidePagerAdapter(
         fm: FragmentManager,
@@ -12,13 +12,13 @@ class ScreenSlidePagerAdapter(
         private val quoteListener: QuoteListener
 ) : FragmentStatePagerAdapter(fm) {
 
-    private val quotes: MutableList<Quote> = mutableListOf()
+    private val quotes: MutableList<QuoteModel> = mutableListOf()
 
     interface QuoteListener {
-        fun onQuoteShow(quote: Quote)
+        fun onQuoteShow(quote: QuoteModel)
     }
 
-    fun setQuotes(quotes: List<Quote>) {
+    fun setQuotes(quotes: List<QuoteModel>) {
         this.quotes.clear()
         this.quotes.addAll(quotes)
         notifyDataSetChanged()

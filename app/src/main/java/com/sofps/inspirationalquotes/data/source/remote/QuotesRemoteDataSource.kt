@@ -3,7 +3,7 @@ package com.sofps.inspirationalquotes.data.source.remote
 import com.sofps.inspirationalquotes.data.QuoteApi
 import com.sofps.inspirationalquotes.data.QuotesService
 import com.sofps.inspirationalquotes.data.source.QuotesDataSource
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.data.QuoteDb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -17,7 +17,7 @@ class QuotesRemoteDataSource(private val quotesService: QuotesService) : QuotesD
         private const val LANGUAGE_SUPPORTED = "EN"
     }
 
-    override fun getQuotes(language: String): Flow<List<Quote>> {
+    override fun getQuotes(language: String): Flow<List<QuoteDb>> {
         return flow {
             val quoteApi = quotesService.getQuoteOfTheDay()
             Timber.d("quoteApi=$quoteApi")
@@ -26,6 +26,6 @@ class QuotesRemoteDataSource(private val quotesService: QuotesService) : QuotesD
     }
 
     private fun mapQuote(quoteApi: QuoteApi) =
-            Quote(language = LANGUAGE_SUPPORTED, author = quoteApi.author, text = quoteApi.quote)
+            QuoteDb(language = LANGUAGE_SUPPORTED, author = quoteApi.author, text = quoteApi.quote)
 
 }

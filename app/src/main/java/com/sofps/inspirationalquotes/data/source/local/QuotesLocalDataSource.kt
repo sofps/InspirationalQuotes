@@ -1,9 +1,8 @@
 package com.sofps.inspirationalquotes.data.source.local
 
-import android.content.Context
-import com.sofps.inspirationalquotes.data.getDatabase
 import com.sofps.inspirationalquotes.data.source.QuotesDataSource
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.data.QuoteDb
+import com.sofps.inspirationalquotes.data.QuoteDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -12,33 +11,27 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 class QuotesLocalDataSource(
-        private val context: Context
+        private val quoteDao: QuoteDao
 ) : QuotesDataSource {
 
-    override fun getQuotes(language: String): Flow<List<Quote>> {
+    override fun getQuotes(language: String): Flow<List<QuoteDb>> {
         return flow {
-            getDatabase(context).apply {
-                val quotes = quoteDao().getAllByLanguage(language)
-                emit(quotes)
-            }
+            val quotes = quoteDao.getAllByLanguage(language)
+            emit(quotes)
         }.flowOn(Dispatchers.IO)
     }
 
-    fun persist(quotes: List<Quote>) {
+    fun persist(quotes: List<QuoteDb>) {
         GlobalScope.launch(Dispatchers.IO) {
-            getDatabase(context).apply {
-                quoteDao().insertAll(quotes)
-            }
+            quoteDao.insertAll(quotes)
         }
     }
 
-    fun addOneTimeShowed(quote: Quote) {
-        quote.timesShowed++
+    fun addOneTimeShowed(quote: QuoteDb) {
+        val updatedQuote = quote.copy(timesShowed = quote.timesShowed + 1)
 
         GlobalScope.launch(Dispatchers.IO) {
-            getDatabase(context).apply {
-                quoteDao().update(quote)
-            }
+            quoteDao.update(updatedQuote)
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.sofps.inspirationalquotes.ui
 
 import com.sofps.inspirationalquotes.data.source.QuotesRepository
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.model.QuoteModel
 import com.sofps.inspirationalquotes.model.ViewState
 import com.sofps.inspirationalquotes.util.LanguagePreferences
 import kotlinx.coroutines.Dispatchers
@@ -15,9 +15,9 @@ class QuotesSlidePresenter internal constructor(
         private val languagePreferences: LanguagePreferences
 ) : QuotesSlideContract.Presenter {
 
-    private val internalQuotes = mutableListOf<Quote>()
+    private val internalQuotes = mutableListOf<QuoteModel>()
 
-    override var quotes: List<Quote>
+    override var quotes: List<QuoteModel>
         get() = internalQuotes
         set(quotes) {
             internalQuotes.addAll(quotes)
@@ -53,7 +53,7 @@ class QuotesSlidePresenter internal constructor(
         loadQuotesForCurrentLanguage()
     }
 
-    override fun onQuoteShow(quote: Quote) {
+    override fun onQuoteShow(quote: QuoteModel) {
         quotesRepository.addOneTimeShowed(quote)
     }
 }
