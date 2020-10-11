@@ -32,16 +32,7 @@ fun getDatabase(context: Context): AppDatabase {
                             AppDatabase::class.java,
                             "inspirational_quotes"
                     )
-                    .addCallback(object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            // insert the data on the IO Thread
-                            GlobalScope.launch(Dispatchers.IO) {
-// TODO there is a race condition with this, the first time the app is launched it shows nothing because the database is not populated yet
-                                INSTANCE.quoteDao().insertAll(PREPOPULATE_DATA)
-                            }
-                        }
-                    })
+                    .createFromAsset("databases/inspirational_quotes.db")
                     .fallbackToDestructiveMigration()
                     .build()
         }
