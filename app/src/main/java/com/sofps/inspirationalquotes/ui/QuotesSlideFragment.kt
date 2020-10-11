@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import com.sofps.inspirationalquotes.R
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.model.QuoteModel
 import kotlinx.android.synthetic.main.fragment_quotes_slide.*
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
@@ -108,7 +108,7 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
         super.onViewStateRestored(savedInstanceState)
 
         if (savedInstanceState != null) {
-            presenter?.quotes = savedInstanceState.getSerializable(QUOTES) as List<Quote>
+            presenter?.quotes = savedInstanceState.getSerializable(QUOTES) as List<QuoteModel>
         }
     }
 
@@ -159,7 +159,7 @@ class QuotesSlideFragment : Fragment(), QuotesSlideContract.View {
         }
     }
 
-    override fun setQuotes(quotes: List<Quote>) {
+    override fun setQuotes(quotes: List<QuoteModel>) {
         pagerAdapter?.setQuotes(quotes)
     }
 

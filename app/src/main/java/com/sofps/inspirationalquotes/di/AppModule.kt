@@ -1,7 +1,9 @@
 package com.sofps.inspirationalquotes.di
 
 import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
+import com.sofps.inspirationalquotes.data.AppDatabase
 import com.sofps.inspirationalquotes.data.QuotesService
 import com.sofps.inspirationalquotes.data.source.QuotesRepository
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource
@@ -18,7 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
 
-    single { QuotesLocalDataSource(androidContext()) }
+    single { QuotesLocalDataSource(get()) }
 
     single { QuotesRemoteDataSource(get()) }
 
@@ -30,15 +32,23 @@ val appModule = module {
 
     single { provideSharedPreferences(androidApplication()) }
 
+    single { provideAppDatabase(androidContext()) }
+
+    single { provideQuoteDao(get()) }
+
     factory { (view: QuotesSlideContract.View) -> QuotesSlidePresenter(view, get(), get()) as QuotesSlideContract.Presenter }
 
 }
 
-fun provideQuotesService(): QuotesService =
+private fun provideQuotesService(): QuotesService =
         Retrofit.Builder().baseUrl("http://quotes.rest/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(QuotesService::class.java)
 
 private fun provideSharedPreferences(application: Application): SharedPreferences =
-        application.getSharedPreferences("InspirationalQuotes", android.content.Context.MODE_PRIVATE)
+        application.getSharedPreferences("InspirationalQuotes", Context.MODE_PRIVATE)
+
+private fun provideAppDatabase(context: Context) = AppDatabase.buildDefault(context)
+
+private fun provideQuoteDao(appDatabase: AppDatabase) = appDatabase.quoteDao()

@@ -2,7 +2,9 @@ package com.sofps.inspirationalquotes.data.source
 
 import com.sofps.inspirationalquotes.data.source.local.QuotesLocalDataSource
 import com.sofps.inspirationalquotes.data.source.remote.QuotesRemoteDataSource
-import com.sofps.inspirationalquotes.model.Quote
+import com.sofps.inspirationalquotes.data.toQuoteDb
+import com.sofps.inspirationalquotes.data.toQuoteModel
+import com.sofps.inspirationalquotes.model.QuoteModel
 import com.sofps.inspirationalquotes.model.ViewState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -13,7 +15,7 @@ class QuotesRepository(
         private val quotesRemoteDataSource: QuotesRemoteDataSource
 ) {
 
-    suspend fun getQuotesForLanguage(language: String): Flow<ViewState<List<Quote>>> {
+    suspend fun getQuotesForLanguage(language: String): Flow<ViewState<List<QuoteModel>>> {
         return flow {
             emit(ViewState.loading())
 
@@ -28,6 +30,11 @@ class QuotesRepository(
             }
 
             quotesLocalDataSource.getQuotes(language)
+                    .map { quotes ->
+                        quotes.map {
+                            it.toQuoteModel()
+                        }
+                    }
                     .collect {
                         emit(ViewState.success(it))
                     }
@@ -36,7 +43,7 @@ class QuotesRepository(
         }.flowOn(Dispatchers.IO)
     }
 
-    fun addOneTimeShowed(quote: Quote) {
-        quotesLocalDataSource.addOneTimeShowed(quote)
+    fun addOneTimeShowed(quote: QuoteModel) {
+        quotesLocalDataSource.addOneTimeShowed(quote.toQuoteDb())
     }
 }
